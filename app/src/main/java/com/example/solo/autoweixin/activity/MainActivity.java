@@ -1,6 +1,7 @@
 package com.example.solo.autoweixin.activity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -36,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
                                 //打开系统设置中辅助功能
                                 Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
                                 startActivity(intent);
-                                // Toast.makeText(MainActivity.this, "找到检测被删好友辅助，然后开启服务即可", Toast.LENGTH_LONG).show();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
                         //打开系统设置中辅助功能
                         Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
                         startActivity(intent);
-                        // Toast.makeText(MainActivity.this, "找到检测被删好友辅助，然后开启服务即可", Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -65,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         // 强制结束服务
+        InspectWechatFriendService.canCheck = true;
         InspectWechatFriendService.hasComplete = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            InspectWechatFriendService.getInspectWechatFriendService().disableSelf();
+        } else {
+            InspectWechatFriendService.getInspectWechatFriendService().stopSelf();
+        }
     }
 }

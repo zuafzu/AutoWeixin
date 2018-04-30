@@ -20,12 +20,11 @@ public class Utils {
     public static String getVersion(Context context){
         PackageManager packageManager = context.getPackageManager();
         List<PackageInfo> packageInfoList = packageManager.getInstalledPackages(0);
-
         for(PackageInfo packageInfo:packageInfoList){
             if("com.tencent.mm".equals(packageInfo.packageName)){
                 return packageInfo.versionName;
             }
         }
-        return "6.3.32";
+        return "6.6.6";
     }
 }

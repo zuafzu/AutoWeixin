@@ -39,7 +39,6 @@ public class FloatNormalView extends LinearLayout {
     private float y;
     private boolean initViewPlace = false;
     private MyWindowManager myWindowManager;
-    private boolean isControlViewShowing = false;
 
     public FloatNormalView(Context context) {
         super(context);
@@ -107,7 +106,6 @@ public class FloatNormalView extends LinearLayout {
                         @Override
                         public void run() {
                             myWindowManager.removeNormalView(context);
-                            isControlViewShowing = false;
                             InspectWechatFriendService.canCheck = true;
                             InspectWechatFriendService.hasComplete = true;
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -125,7 +123,6 @@ public class FloatNormalView extends LinearLayout {
             @Override
             public void onClick(View view) {
                 myWindowManager.removeNormalView(context);
-                isControlViewShowing = false;
                 InspectWechatFriendService.canCheck = true;
                 InspectWechatFriendService.hasComplete = true;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -133,7 +130,6 @@ public class FloatNormalView extends LinearLayout {
                 } else {
                     InspectWechatFriendService.getInspectWechatFriendService().stopSelf();
                 }
-                Toast.makeText(getContext(), "已经结束了", Toast.LENGTH_SHORT).show();
             }
         });
         view.setOnTouchListener(new OnTouchListener() {
