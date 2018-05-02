@@ -1,14 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackground"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/start"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="开始检查" />
+        android:layout_height="44dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:text="@string/app_name"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@android:color/darker_gray" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@android:color/white"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioButton1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:button="@null"
+            android:checked="true"
+            android:drawableTint="@drawable/bottom_navigation_selector"
+            android:drawableTop="@drawable/bottom_navigation_btn1_selector"
+            android:gravity="center"
+            android:padding="4dp"
+            android:text="首页"
+            android:textColor="@drawable/bottom_navigation_selector" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:button="@null"
+            android:checked="false"
+            android:drawableTint="@drawable/bottom_navigation_selector"
+            android:drawableTop="@drawable/bottom_navigation_btn2_selector"
+            android:gravity="center"
+            android:padding="4dp"
+            android:text="我的"
+            android:textColor="@drawable/bottom_navigation_selector" />
+
+    </RadioGroup>
 
 </LinearLayout>
