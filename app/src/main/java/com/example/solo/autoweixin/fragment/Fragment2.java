@@ -90,7 +90,11 @@ public class Fragment2 extends Fragment {
         ll_fankui.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(UrlUtils.urlQQ)));
+                try{
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(UrlUtils.urlQQ)));
+                }catch (Exception e){
+                    Toast.makeText(getActivity(), "请安装手机QQ", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         ll_jiaocheng = view.findViewById(R.id.ll_jiaocheng);
