@@ -8,6 +8,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
+import com.example.solo.autoweixin.fragment.Fragment1;
 import com.example.solo.autoweixin.utils.PerformClickUtils;
 import com.example.solo.autoweixin.utils.StringUtils;
 import com.example.solo.autoweixin.utils.Utils;
@@ -28,6 +29,7 @@ public class AutoWeixinService extends AccessibilityService {
     public static String wx_name1 = "com.tencent.mm:id/ap2";//用户名文本id（"com.tencent.mm:id/ap5"6.6.5）
     public static String wx_name2 = "com.tencent.mm:id/ap2";//用户名输入框id（"com.tencent.mm:id/ap4"6.6.5）
 
+    public static AutoWeixinService autoWeixinService;
     public static boolean isStart = false;// 是否开启改名
 
     private final long time = 1500;
@@ -42,7 +44,7 @@ public class AutoWeixinService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
-        //辅助服务被打开后 执行此方法
+        // 辅助服务被打开后 执行此方法
         String wechatVersion = Utils.getVersion(this);
         if ("6.6.5".equals(wechatVersion)) {
             wx_yonghuming = "com.tencent.mm:id/cdm";
@@ -60,6 +62,7 @@ public class AutoWeixinService extends AccessibilityService {
             wx_name2 = "com.tencent.mm:id/ap2";
         }
         // 初始化
+        autoWeixinService = this;
         myName = "";
         nameAfterList.clear();
         nameBeforeList.clear();
@@ -103,6 +106,7 @@ public class AutoWeixinService extends AccessibilityService {
     @Override
     public void onInterrupt() {
         // 辅助服务被关闭 执行此方法
+        autoWeixinService = null;
     }
 
     class MyTask extends AsyncTask<List<AccessibilityNodeInfo>, Void, Boolean> {
@@ -278,6 +282,9 @@ public class AutoWeixinService extends AccessibilityService {
                     changeName = "";
                     index = 0;
                     Toast.makeText(AutoWeixinService.this, "改名已经全部完成了！", Toast.LENGTH_SHORT).show();
+                    if (Fragment1.fragment1 != null) {
+                        Fragment1.fragment1.showStopDialog();
+                    }
                 }
             } else {
                 // 主动停止

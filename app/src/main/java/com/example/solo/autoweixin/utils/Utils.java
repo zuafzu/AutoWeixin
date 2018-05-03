@@ -27,4 +27,21 @@ public class Utils {
         }
         return "6.6.6";
     }
+
+    /**
+     * 获取本应用的版本号
+     * @param context
+     * @return
+     */
+    public static String getMyVersion(Context context){
+        PackageManager packageManager = context.getPackageManager();
+        List<PackageInfo> packageInfoList = packageManager.getInstalledPackages(0);
+        for(PackageInfo packageInfo:packageInfoList){
+            if("com.example.solo.autoweixin".equals(packageInfo.packageName)){
+                return packageInfo.versionName;
+            }
+        }
+        return "";
+    }
+
 }

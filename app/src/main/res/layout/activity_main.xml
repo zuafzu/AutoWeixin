@@ -25,8 +25,8 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@android:color/darker_gray" />
+        android:layout_height="2px"
+        android:background="#22222222" />
 
     <RadioGroup
         android:id="@+id/radioGroup"
