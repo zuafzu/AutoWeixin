@@ -3,23 +3,31 @@ package com.example.solo.autoweixin.fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.solo.autoweixin.R;
 import com.example.solo.autoweixin.accessibility.AutoWeixinService;
 import com.example.solo.autoweixin.activity.MainActivity;
+import com.example.solo.autoweixin.utils.StringUtils;
 import com.example.solo.autoweixin.utils.UrlUtils;
 import com.example.solo.autoweixin.utils.WindowManagerUtils;
 import com.example.solo.autoweixin.view.SlideShowView;
@@ -39,6 +47,8 @@ public class Fragment1 extends Fragment {
     private AlertDialog alertDialog;
     private SlideShowView slideShowView;
     private TextView tv_btn;
+    private EditText editText, editText2;
+    private Switch switch1, switch2, switch3;
 
     private boolean isResume = false;
 
@@ -59,15 +69,29 @@ public class Fragment1 extends Fragment {
     public void onStart() {
         super.onStart();
         isResume = true;
-        if (!accessibilityManager.isEnabled()) {
-            tv_btn.setText("开启辅助服务");
-        } else {
+        if (accessibilityManager.isEnabled()) {
             creatFloatWindow();
             if (AutoWeixinService.isStart) {
                 tv_btn.setText("停止改名");
+                if (floatTextView != null) {
+                    floatTextView.setText("停止\n改名");
+                }
+                if (linear != null) {
+                    linear.setVisibility(View.GONE);
+                }
             } else {
                 tv_btn.setText("开启改名");
+                if (floatTextView != null) {
+                    floatTextView.setText("开启\n改名");
+                }
+                if (linear != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        linear.setVisibility(View.VISIBLE);
+                    }
+                }
             }
+        } else {
+            tv_btn.setText("开启辅助服务");
         }
     }
 
@@ -145,11 +169,106 @@ public class Fragment1 extends Fragment {
             }
 
         });
+        ImageView iv_help = view.findViewById(R.id.iv_help);
+        iv_help.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setAction("android.intent.action.VIEW");
+                Uri content_url = Uri.parse(UrlUtils.urlJiaocheng);
+                intent.setData(content_url);
+                startActivity(intent);
+            }
+        });
     }
 
     // 初始化修改名字规则
     private void initChangeName(View view) {
+        StringUtils.hasPreName = false;
+        StringUtils.preName = "";
+        StringUtils.hasNum = false;
+        StringUtils.index = 0;
 
+        editText = view.findViewById(R.id.editText);
+        editText2 = view.findViewById(R.id.editText2);
+        switch1 = view.findViewById(R.id.switch1);
+        switch2 = view.findViewById(R.id.switch2);
+        switch3 = view.findViewById(R.id.switch3);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (switch1.isChecked()) {
+                    StringUtils.preName = s.toString();
+                } else {
+                    StringUtils.preName = "";
+                }
+            }
+        });
+        editText2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (switch3.isChecked()) {
+                    if ("".equals(s.toString())) {
+                        StringUtils.index = 0;
+                    } else {
+                        StringUtils.index = Integer.valueOf(s.toString());
+                    }
+                } else {
+                    StringUtils.index = 0;
+                }
+            }
+        });
+        switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                StringUtils.hasPreName = isChecked;
+                if (isChecked) {
+                    StringUtils.preName = editText.getText().toString();
+                } else {
+                    StringUtils.preName = "";
+                }
+            }
+        });
+        switch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                StringUtils.hasNum = isChecked;
+            }
+        });
+        switch3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    if ("".equals(editText2.getText().toString())) {
+                        StringUtils.index = 0;
+                    } else {
+                        StringUtils.index = Integer.valueOf(editText2.getText().toString());
+                    }
+                } else {
+                    StringUtils.index = 0;
+                }
+            }
+        });
     }
 
     // 开启悬浮窗
@@ -166,8 +285,9 @@ public class Fragment1 extends Fragment {
                 if (AutoWeixinService.isStart) {
                     showStopDialog();
                 } else {
-                    Toast.makeText(getActivity(), "请先开启改名，再进入微信界面", Toast.LENGTH_SHORT).show();
-                    showStartDialog();
+                    if (showStartDialog()) {
+                        Toast.makeText(getActivity(), "请先开启改名，再进入微信界面", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -187,7 +307,11 @@ public class Fragment1 extends Fragment {
     }
 
     // 开始改名确认
-    private void showStartDialog() {
+    private boolean showStartDialog() {
+        if (!StringUtils.hasPreName && !StringUtils.hasNum) {
+            Toast.makeText(getActivity(), "昵称前缀或前缀后编号至少一个选中", Toast.LENGTH_SHORT).show();
+            return false;
+        }
         if (floatTextView != null) {
             floatTextView.setText("停止\n改名");
         }
@@ -228,6 +352,7 @@ public class Fragment1 extends Fragment {
                 alertDialog.show();
             }
         }
+        return true;
     }
 
     // 结束改名

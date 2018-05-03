@@ -1,5 +1,6 @@
 package com.example.solo.autoweixin.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
@@ -29,17 +31,19 @@ public class Fragment2 extends Fragment {
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private EditText editText;
-    private TextView tv_state1,tv_state2,tv_deviceId, tv_version;
-    private Button btn_alive,btn_copy;
-    private LinearLayout ll_fankui,ll_jiaocheng, ll_fuzu;
+    private TextView tv_state1;
+    private TextView tv_state2;
+    private TextView tv_deviceId;
+    private Button btn_alive;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.main_tab_02, container, false);
         initView(view);
         return view;
     }
 
+    @SuppressLint("HardwareIds")
     private void initView(View view) {
         editText = view.findViewById(R.id.editText);
         btn_alive = view.findViewById(R.id.btn_alive);
@@ -74,19 +78,19 @@ public class Fragment2 extends Fragment {
             }
         });
         tv_deviceId = view.findViewById(R.id.tv_deviceId);
-        tv_deviceId.setText(Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID));
-        btn_copy = view.findViewById(R.id.btn_copy);
+        tv_deviceId.setText(Settings.Secure.getString(Objects.requireNonNull(getActivity()).getContentResolver(), Settings.Secure.ANDROID_ID));
+        Button btn_copy = view.findViewById(R.id.btn_copy);
         btn_copy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ClipboardManager cm = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                cm.setText(tv_deviceId.getText());
+                Objects.requireNonNull(cm).setText(tv_deviceId.getText());
                 Toast.makeText(getActivity(), "复制成功", Toast.LENGTH_SHORT).show();
             }
         });
-        tv_version = view.findViewById(R.id.tv_version);
+        TextView tv_version = view.findViewById(R.id.tv_version);
         tv_version.setText(Utils.getMyVersion(Objects.requireNonNull(getActivity())));
-        ll_fankui = view.findViewById(R.id.ll_fankui);
+        LinearLayout ll_fankui = view.findViewById(R.id.ll_fankui);
         ll_fankui.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,19 +101,18 @@ public class Fragment2 extends Fragment {
                 }
             }
         });
-        ll_jiaocheng = view.findViewById(R.id.ll_jiaocheng);
+        LinearLayout ll_jiaocheng = view.findViewById(R.id.ll_jiaocheng);
         ll_jiaocheng.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent();
                 intent.setAction("android.intent.action.VIEW");
-                Uri content_url = Uri.parse(UrlUtils.urlJiaocheng);
+                Uri content_url = Uri.parse(UrlUtils.urlJiaocheng2);
                 intent.setData(content_url);
                 startActivity(intent);
-
             }
         });
-        ll_fuzu = view.findViewById(R.id.ll_fuzu);
+        LinearLayout ll_fuzu = view.findViewById(R.id.ll_fuzu);
         ll_fuzu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
