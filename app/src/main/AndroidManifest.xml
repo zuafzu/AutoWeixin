@@ -39,6 +39,7 @@
                 android:resource="@xml/inspect_wechat_friend" />
         </service>
 
+        <activity android:name=".activity.Main2Activity"></activity>
     </application>
 
 </manifest>

@@ -249,7 +249,7 @@ public class AutoWeixinService extends AccessibilityService {
                                 break;
                             }
                         }
-                        if (hasSame) {
+                        if (!hasSame) {
                             isNext = false;
                             break;
                         }

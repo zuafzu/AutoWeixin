@@ -1,5 +1,9 @@
 package com.example.solo.autoweixin.fragment;
 
+import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -7,11 +11,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,19 +30,26 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.example.solo.autoweixin.R;
 import com.example.solo.autoweixin.accessibility.AutoWeixinService;
+import com.example.solo.autoweixin.activity.Main2Activity;
 import com.example.solo.autoweixin.activity.MainActivity;
 import com.example.solo.autoweixin.utils.StringUtils;
 import com.example.solo.autoweixin.utils.UrlUtils;
+import com.example.solo.autoweixin.utils.Utils;
 import com.example.solo.autoweixin.utils.WindowManagerUtils;
 import com.example.solo.autoweixin.view.SlideShowView;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION;
 
 public class Fragment1 extends Fragment {
 
@@ -49,12 +63,15 @@ public class Fragment1 extends Fragment {
     private TextView tv_btn;
     private EditText editText, editText2;
     private Switch switch1, switch2, switch3;
+    private ToggleButton toggleButton1, toggleButton2, toggleButton3;
 
     private boolean isResume = false;
+    private boolean isShowWindow = true;
 
     // 悬浮窗
+    private Toast mToast;
+    private View windowView;
     private TextView floatTextView;
-    private LinearLayout linear;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,23 +89,18 @@ public class Fragment1 extends Fragment {
         if (accessibilityManager.isEnabled()) {
             creatFloatWindow();
             if (AutoWeixinService.isStart) {
-                tv_btn.setText("停止改名");
+                tv_btn.setText("停止备注");
                 if (floatTextView != null) {
-                    floatTextView.setText("停止\n改名");
-                }
-                if (linear != null) {
-                    linear.setVisibility(View.GONE);
+                    floatTextView.setText("停止\n备注");
                 }
             } else {
-                tv_btn.setText("开启改名");
+                tv_btn.setText("开始备注");
                 if (floatTextView != null) {
-                    floatTextView.setText("开启\n改名");
+                    floatTextView.setText("开始\n备注");
                 }
-                if (linear != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        linear.setVisibility(View.VISIBLE);
-                    }
-                }
+            }
+            if (windowView != null) {
+                windowView.setVisibility(View.GONE);
             }
         } else {
             tv_btn.setText("开启辅助服务");
@@ -99,6 +111,9 @@ public class Fragment1 extends Fragment {
     public void onPause() {
         super.onPause();
         isResume = false;
+        if (windowView != null) {
+            windowView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -119,7 +134,7 @@ public class Fragment1 extends Fragment {
             @Override
             public void onAccessibilityStateChanged(boolean b) {
                 if (b) {
-                    getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
+                    startActivity(new Intent(getActivity(), MainActivity.class));
                     // 开启悬浮窗
                     creatFloatWindow();
                 } else {
@@ -194,6 +209,10 @@ public class Fragment1 extends Fragment {
         switch1 = view.findViewById(R.id.switch1);
         switch2 = view.findViewById(R.id.switch2);
         switch3 = view.findViewById(R.id.switch3);
+        toggleButton1 = view.findViewById(R.id.toggleButton1);
+        toggleButton2 = view.findViewById(R.id.toggleButton2);
+        toggleButton3 = view.findViewById(R.id.toggleButton3);
+
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -207,7 +226,8 @@ public class Fragment1 extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (switch1.isChecked()) {
+                // if (switch1.isChecked()) {
+                if (toggleButton1.isChecked()) {
                     StringUtils.preName = s.toString();
                 } else {
                     StringUtils.preName = "";
@@ -227,7 +247,8 @@ public class Fragment1 extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (switch3.isChecked()) {
+                // if (switch3.isChecked()) {
+                if (toggleButton3.isChecked()) {
                     if ("".equals(s.toString())) {
                         StringUtils.index = 0;
                     } else {
@@ -235,6 +256,17 @@ public class Fragment1 extends Fragment {
                     }
                 } else {
                     StringUtils.index = 0;
+                }
+            }
+        });
+        toggleButton1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                StringUtils.hasPreName = isChecked;
+                if (isChecked) {
+                    StringUtils.preName = editText.getText().toString();
+                } else {
+                    StringUtils.preName = "";
                 }
             }
         });
@@ -249,10 +281,30 @@ public class Fragment1 extends Fragment {
                 }
             }
         });
+        toggleButton2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                StringUtils.hasNum = isChecked;
+            }
+        });
         switch2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 StringUtils.hasNum = isChecked;
+            }
+        });
+        toggleButton3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    if ("".equals(editText2.getText().toString())) {
+                        StringUtils.index = 0;
+                    } else {
+                        StringUtils.index = Integer.valueOf(editText2.getText().toString());
+                    }
+                } else {
+                    StringUtils.index = 0;
+                }
             }
         });
         switch3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -272,13 +324,50 @@ public class Fragment1 extends Fragment {
     }
 
     // 开启悬浮窗
+    @SuppressLint("InflateParams")
     private void creatFloatWindow() {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.float_normal_view, null);
-        floatTextView = view.findViewById(R.id.textView);
-        linear = view.findViewById(R.id.linear);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            linear.setVisibility(View.VISIBLE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            if (!Utils.getAppOps(getActivity())) {
+                // 防止创建多个
+                if (alertDialog != null) {
+                    alertDialog.dismiss();
+                }
+                // 创建对话框
+                AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
+                builder.setTitle("提示");
+                builder.setMessage("需要悬浮窗权限，是否跳转到设置去开启？");
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.M)
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        alertDialog.dismiss();
+                        //没有悬浮窗权限m,去开启悬浮窗权限
+                        try {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                builder.setNegativeButton("不再提醒", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        isShowWindow = false;
+                        alertDialog.dismiss();
+                    }
+                });
+                alertDialog = builder.create();
+                alertDialog.setCancelable(false);
+                if (isShowWindow) {
+                    alertDialog.show();
+                }
+                return;
+            }
         }
+        windowView = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.float_normal_view, null);
+        floatTextView = windowView.findViewById(R.id.textView);
+        LinearLayout linear = windowView.findViewById(R.id.linear);
         floatTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -286,7 +375,7 @@ public class Fragment1 extends Fragment {
                     showStopDialog();
                 } else {
                     if (showStartDialog()) {
-                        Toast.makeText(getActivity(), "请先开启改名，再进入微信界面", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "请先开始备注，再进入微信界面", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -294,31 +383,40 @@ public class Fragment1 extends Fragment {
         linear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (AutoWeixinService.autoWeixinService != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        AutoWeixinService.autoWeixinService.disableSelf();
-                    }
-                }
-                WindowManagerUtils.removeView();
-                tv_btn.setText("开启辅助服务");
+                comeBack();
             }
         });
-        WindowManagerUtils.startView(getActivity().getApplication(), view);
+        WindowManagerUtils.startView(Objects.requireNonNull(getActivity()).getApplication(), windowView);
     }
 
     // 开始改名确认
     private boolean showStartDialog() {
         if (!StringUtils.hasPreName && !StringUtils.hasNum) {
-            Toast.makeText(getActivity(), "昵称前缀或前缀后编号至少一个选中", Toast.LENGTH_SHORT).show();
+            comeBack();
+            ((MainActivity) Objects.requireNonNull(getActivity())).setPage(0);
+            // 防止创建多个
+            if (alertDialog != null) {
+                alertDialog.dismiss();
+            }
+            // 创建对话框
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("提示");
+            builder.setMessage("昵称前缀或前缀后编号至少一个选中");
+            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    alertDialog.dismiss();
+                }
+            });
+            alertDialog = builder.create();
+            alertDialog.setCancelable(false);
+            alertDialog.show();
             return false;
         }
         if (floatTextView != null) {
-            floatTextView.setText("停止\n改名");
+            floatTextView.setText("停止\n备注");
         }
-        if (linear != null) {
-            linear.setVisibility(View.GONE);
-        }
-        tv_btn.setText("停止改名");
+        tv_btn.setText("停止备注");
         AutoWeixinService.isStart = true;
         if (getActivity() != null) {
             // 在界面的时候弹出
@@ -330,7 +428,7 @@ public class Fragment1 extends Fragment {
                 // 创建对话框
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("提示");
-                builder.setMessage("改名功能已经开启，是否跳转到微信？");
+                builder.setMessage("开始备注功能已经开启，是否跳转到微信？");
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -341,7 +439,7 @@ public class Fragment1 extends Fragment {
                         startActivity(intent);
                     }
                 });
-                builder.setNegativeButton("自己跳转", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton("手动跳转", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         alertDialog.dismiss();
@@ -358,14 +456,48 @@ public class Fragment1 extends Fragment {
     // 结束改名
     public void showStopDialog() {
         if (floatTextView != null) {
-            floatTextView.setText("开启\n改名");
+            floatTextView.setText("开始\n备注");
         }
-        if (linear != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                linear.setVisibility(View.VISIBLE);
-            }
-        }
-        tv_btn.setText("开启改名");
+        tv_btn.setText("开始备注");
         AutoWeixinService.isStart = false;
     }
+
+    // 回到当前应用
+    private void comeBack(){
+        try{
+            Intent intent = new Intent(getActivity(),Main2Activity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Intent intent = new Intent();
+            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+            intent.setClassName("com.example.solo.autoweixin","com.example.solo.autoweixin.activity.Main2Activity");
+            startActivity(intent);
+        }
+        CustomTimeToast(true);
+    }
+
+    public void CustomTimeToast(final boolean flag) {
+        if(flag){
+            mToast = Toast.makeText(getActivity(), "正在返回应用中，请稍等...", Toast.LENGTH_LONG);
+            final Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if(!isResume){
+                        mToast.show();
+                    }
+                }
+            }, 0, 3000);// 3000表示点击按钮之后，Toast延迟3000ms后显示
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    mToast.cancel();
+                    timer.cancel();
+                }
+            }, 5000);// 5000表示Toast显示时间为5秒
+        }else{
+            mToast.cancel();
+        }
+    }
+
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="#99ffffff">
 
     <LinearLayout
@@ -10,12 +10,12 @@
         android:orientation="vertical">
 
         <ImageView
-            android:tint="@color/colorAccent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:src="@mipmap/ic_drag" />
+            android:src="@mipmap/ic_drag"
+            android:tint="@color/colorAccent" />
 
         <LinearLayout
             android:id="@+id/ll_float_normal"
@@ -49,10 +49,10 @@
                     android:id="@+id/textView"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
+                    android:background="?android:selectableItemBackground"
                     android:gravity="center"
-                    android:text="开启\n改名"
-                    android:textColor="@android:color/black"
-                    android:textStyle="bold" />
+                    android:text="开始\n备注"
+                    android:textColor="@android:color/black" />
 
                 <View
                     android:layout_width="2px"
@@ -70,8 +70,8 @@
                 android:id="@+id/linear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:background="?android:selectableItemBackground"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -87,9 +87,8 @@
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:gravity="center"
-                        android:text="停止\n服务"
-                        android:textColor="@android:color/black"
-                        android:textStyle="bold" />
+                        android:text="返回\n改名宝"
+                        android:textColor="@android:color/black" />
 
                     <View
                         android:layout_width="2px"
