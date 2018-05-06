@@ -7,6 +7,7 @@ import android.os.Bundle;
 import com.example.solo.autoweixin.R;
 import com.example.solo.autoweixin.fragment.Fragment1;
 
+// 回到当前应用
 public class Main2Activity extends AppCompatActivity {
 
     @Override

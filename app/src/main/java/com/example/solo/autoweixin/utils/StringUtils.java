@@ -10,6 +10,7 @@ public class StringUtils {
     public static String preName = "";
     public static boolean hasNum = false;
     public static int index = 0;
+    public static String keyName = "";
 
     public static String getName(String name, int mIndex) {
         String string = "";

@@ -55,15 +55,6 @@
                             android:hint="默认当前月份+点+日期（如：5.3）"
                             android:textSize="14sp" />
 
-                        <Switch
-                            android:id="@+id/switch1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="false"
-                            android:textOff="关闭"
-                            android:textOn="开启"
-                            android:visibility="gone" />
-
                         <ToggleButton
                             android:id="@+id/toggleButton1"
                             android:layout_width="64dp"
@@ -100,13 +91,6 @@
                             android:background="@null"
                             android:hint="+横杠+编号（如：-1）"
                             android:textSize="14sp" />
-
-                        <Switch
-                            android:id="@+id/switch2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="false"
-                            android:visibility="gone" />
 
                         <ToggleButton
                             android:id="@+id/toggleButton2"
@@ -147,15 +131,46 @@
                             android:inputType="number"
                             android:textSize="14sp" />
 
-                        <Switch
-                            android:id="@+id/switch3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="false"
-                            android:visibility="gone" />
-
                         <ToggleButton
                             android:id="@+id/toggleButton3"
+                            android:layout_width="64dp"
+                            android:layout_height="32dp"
+                            android:background="@drawable/togglebutton_selector"
+                            android:text="ToggleButton"
+                            android:textColor="@android:color/white"
+                            android:textOff="关闭"
+                            android:textOn="开启" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1px"
+                        android:background="#22222222" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="排除关键字："
+                            android:textColor="@android:color/black" />
+
+                        <EditText
+                            android:id="@+id/editText3"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:hint="默认全部修改，不修改包含关键字的用户"
+                            android:textSize="14sp" />
+
+                        <ToggleButton
+                            android:id="@+id/toggleButton4"
                             android:layout_width="64dp"
                             android:layout_height="32dp"
                             android:background="@drawable/togglebutton_selector"

@@ -35,6 +35,9 @@ public class AutoWeixinService extends AccessibilityService {
     private final long time = 1500;
 
     private String myName = "";// 自己的用户名
+    private boolean isStarFriend = false;// 判断是不是星标朋友
+    private boolean isAfterStarFriendName = false; // 判断是不是星标朋友下面的朋友
+    private String afterStarFriendNameKey = "";// 星标朋友下面的第一个字母
     private List<String> nameAfterList = new ArrayList<>();//修改后的总用户名列表
     private List<String> nameBeforeList = new ArrayList<>();//修改前的当前用户名列表
     private String changeName;// 修改者的用户名
@@ -77,6 +80,7 @@ public class AutoWeixinService extends AccessibilityService {
             if (accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
                 //获取当前activity的类名:
                 String currentWindowActivity = accessibilityEvent.getClassName().toString();
+                Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
                 if (wx_zhujiemian.equals(currentWindowActivity)) {
                     AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
                     if (accessibilityNodeInfo == null) {
@@ -129,19 +133,43 @@ public class AutoWeixinService extends AccessibilityService {
                         AccessibilityNodeInfo abi = nodeInfoList.get(0);
                         for (int i = 0; i < abi.getChildCount(); i++) {
                             if (abi.getChild(i) != null) {
-                                AccessibilityNodeInfo ani = abi.getChild(i).getChild(abi.getChild(i).getChildCount() - 1);
-                                if (ani != null && ani.getText() != null && ani.getText() != null) {
-                                    String name = ani.getText().toString();
-                                    if (!name.equals(myName)) {
-                                        boolean flag = true;
-                                        for (int j = 0; j < nameAfterList.size(); j++) {
-                                            if (nameAfterList.get(j).equals(name)) {
-                                                flag = false;
+                                // 判断是不是星标朋友
+                                if (abi.getChild(i).getChildCount() == 2) {
+                                    AccessibilityNodeInfo ani = abi.getChild(i).getChild(0);
+                                    if (ani != null && ani.getText() != null && ani.getText() != null) {
+                                        String name = ani.getText().toString();
+                                        if (name.equals("星标朋友")) {
+                                            isStarFriend = true;
+                                        } else {
+                                            isStarFriend = false;
+                                            if(afterStarFriendNameKey.equals("")){
+                                                afterStarFriendNameKey = name;
                                             }
                                         }
-                                        if (flag) {
-                                            if (!"微信团队".equals(name) && !"文件传输助手".equals(name)) {
-                                                nameBeforeList.add(name);
+                                    }
+                                }
+                                if (!isStarFriend) {
+                                    AccessibilityNodeInfo ani = abi.getChild(i).getChild(abi.getChild(i).getChildCount() - 1);
+                                    if (ani != null && ani.getText() != null && ani.getText() != null) {
+                                        String name = ani.getText().toString();
+                                        if (!name.equals(myName)) {
+                                            boolean flag = true;
+                                            for (int j = 0; j < nameAfterList.size(); j++) {
+                                                if (nameAfterList.get(j).equals(name)) {
+                                                    flag = false;
+                                                }
+                                            }
+                                            if (flag) {
+                                                if (!"微信团队".equals(name) && !"文件传输助手".equals(name)) {
+                                                    // 检查是否包含关键字，包含不修改
+                                                    if (StringUtils.keyName.equals("")) {
+                                                        nameBeforeList.add(name);
+                                                    } else {
+                                                        if (!name.contains(StringUtils.keyName)) {
+                                                            nameBeforeList.add(name);
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -213,25 +241,50 @@ public class AutoWeixinService extends AccessibilityService {
                         return false;
                     }
                 } else {
-                    // 检查有没有没改过的
-                    nameBeforeList.clear();
-                    nodeInfoList = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_haoyouliebiao);
-                    AccessibilityNodeInfo abi = nodeInfoList.get(0);
-                    for (int i = 0; i < abi.getChildCount(); i++) {
-                        if (abi.getChild(i) != null) {
-                            AccessibilityNodeInfo ani = abi.getChild(i).getChild(abi.getChild(i).getChildCount() - 1);
-                            if (ani != null && ani.getText() != null && ani.getText() != null) {
-                                String name = ani.getText().toString();
-                                if (!name.equals(myName)) {
-                                    boolean flag = true;
-                                    for (int j = 0; j < nameAfterList.size(); j++) {
-                                        if (nameAfterList.get(j).equals(name)) {
-                                            flag = false;
+                    // 本页不全是星标朋友
+                    if (!isStarFriend) {
+                        // 检查有没有没改过的
+                        nameBeforeList.clear();
+                        nodeInfoList = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_haoyouliebiao);
+                        if (nodeInfoList.isEmpty()) {
+                            return false;
+                        }
+                        AccessibilityNodeInfo abi = nodeInfoList.get(0);
+                        for (int i = 0; i < abi.getChildCount(); i++) {
+                            if (abi.getChild(i) != null) {
+                                // 判断是不是星标朋友下面的朋友
+                                if (abi.getChild(i).getChildCount() == 2) {
+                                    AccessibilityNodeInfo ani = abi.getChild(i).getChild(0);
+                                    if (ani != null && ani.getText() != null && ani.getText() != null) {
+                                        String name = ani.getText().toString();
+                                        if (name.equals(afterStarFriendNameKey)) {
+                                            isAfterStarFriendName = true;
                                         }
                                     }
-                                    if (flag) {
-                                        if (!"微信团队".equals(name) && !"文件传输助手".equals(name)) {
-                                            nameBeforeList.add(name);
+                                }
+                                if(isAfterStarFriendName){
+                                    AccessibilityNodeInfo ani = abi.getChild(i).getChild(abi.getChild(i).getChildCount() - 1);
+                                    if (ani != null && ani.getText() != null && ani.getText() != null) {
+                                        String name = ani.getText().toString();
+                                        if (!name.equals(myName)) {
+                                            boolean flag = true;
+                                            for (int j = 0; j < nameAfterList.size(); j++) {
+                                                if (nameAfterList.get(j).equals(name)) {
+                                                    flag = false;
+                                                }
+                                            }
+                                            if (flag) {
+                                                if (!"微信团队".equals(name) && !"文件传输助手".equals(name)) {
+                                                    // 检查是否包含关键字，包含不修改
+                                                    if (StringUtils.keyName.equals("")) {
+                                                        nameBeforeList.add(name);
+                                                    } else {
+                                                        if (!name.contains(StringUtils.keyName)) {
+                                                            nameBeforeList.add(name);
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -277,11 +330,14 @@ public class AutoWeixinService extends AccessibilityService {
                     // 被动停止
                     isStart = false;
                     myName = "";
+                    isStarFriend = false;
+                    isAfterStarFriendName = false;
+                    afterStarFriendNameKey = "";
                     nameAfterList.clear();
                     nameBeforeList.clear();
                     changeName = "";
                     index = 0;
-                    Toast.makeText(AutoWeixinService.this, "改名已经全部完成了！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AutoWeixinService.this, "改名已经停止了！", Toast.LENGTH_SHORT).show();
                     if (Fragment1.fragment1 != null) {
                         Fragment1.fragment1.showStopDialog();
                     }
@@ -289,11 +345,14 @@ public class AutoWeixinService extends AccessibilityService {
             } else {
                 // 主动停止
                 myName = "";
+                isStarFriend = false;
+                isAfterStarFriendName = false;
+                afterStarFriendNameKey = "";
                 nameAfterList.clear();
                 nameBeforeList.clear();
                 changeName = "";
                 index = 0;
-                Toast.makeText(AutoWeixinService.this, "改名已经被停止了！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AutoWeixinService.this, "改名已经停止了！", Toast.LENGTH_SHORT).show();
             }
         }
 
