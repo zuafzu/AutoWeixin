@@ -16,6 +16,8 @@ import com.example.solo.autoweixin.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.solo.autoweixin.utils.PerformClickUtils.performClick;
+
 public class AutoWeixinService extends AccessibilityService {
 
     public static final String LauncherUI = "com.tencent.mm.ui.LauncherUI";
@@ -29,20 +31,26 @@ public class AutoWeixinService extends AccessibilityService {
     public static String wx_name1 = "com.tencent.mm:id/ap2";//用户名文本id（"com.tencent.mm:id/ap5"6.6.5）
     public static String wx_name2 = "com.tencent.mm:id/ap2";//用户名输入框id（"com.tencent.mm:id/ap4"6.6.5）
 
+    public static String wx_40 = "com.tencent.mm.ui.contact.SelectContactUI";// 40人界面
+    public static String wx_200 = "com.tencent.mm.plugin.masssend.ui.MassSendSelectContactUI";// 200人界面
+    public static String wx_xuanzelianxiren = " com.tencent.mm:id/fw";//选择联系人列表
+
     public static AutoWeixinService autoWeixinService;
-    public static boolean isStart = false;// 是否开启改名
 
-    private final long time = 1500;
-
+    public static boolean isChangeNameStart = false;// 是否开启改名
     private String myName = "";// 自己的用户名
     private boolean isStarFriend = false;// 判断是不是星标朋友
     private boolean isAfterStarFriendName = false; // 判断是不是星标朋友下面的朋友
     private String afterStarFriendNameKey = "";// 星标朋友下面的第一个字母
-    private List<String> nameAfterList = new ArrayList<>();//修改后的总用户名列表
     private List<String> nameBeforeList = new ArrayList<>();//修改前的当前用户名列表
     private String changeName;// 修改者的用户名
-    private int index = 0;// 当前修改位置
-    private MyTask myTask;
+    private List<String> nameAfterList = new ArrayList<>();//修改后的总用户名列表(选择联系人和修改备注共用)
+    private int index = 0;// 当前修改位置(选择联系人和修改备注共用)
+    private ChangNameTask changNameTask;
+
+    public static int selectNum = 0;// 改名数量，0即不选择
+    private AccessibilityNodeInfo abni;//联系人翻页控件
+    private SelectAllTask selectAllTask;
 
     @Override
     protected void onServiceConnected() {
@@ -75,13 +83,13 @@ public class AutoWeixinService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
-        if (isStart) {
-            //如果手机当前界面的窗口发送变化
-            if (accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-                //获取当前activity的类名:
-                String currentWindowActivity = accessibilityEvent.getClassName().toString();
-                Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
-                if (wx_zhujiemian.equals(currentWindowActivity)) {
+        //如果手机当前界面的窗口发送变化
+        if (accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            //获取当前activity的类名:
+            String currentWindowActivity = accessibilityEvent.getClassName().toString();
+            Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
+            if (wx_zhujiemian.equals(currentWindowActivity)) {// 批量改备注
+                if (isChangeNameStart) {
                     AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
                     if (accessibilityNodeInfo == null) {
                         return;
@@ -89,7 +97,7 @@ public class AutoWeixinService extends AccessibilityService {
                     if ("".equals(myName)) {
                         // 获取自己用户名
                         PerformClickUtils.findTextAndClick(this, "我");
-                        if (sleep()) {
+                        if (sleepChangeName()) {
                             return;
                         }
                         List<AccessibilityNodeInfo> nil = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_yonghuming);
@@ -99,9 +107,21 @@ public class AutoWeixinService extends AccessibilityService {
                         }
                         PerformClickUtils.findTextAndClick(this, "通讯录");
                         PerformClickUtils.findTextAndClick(this, "通讯录");
-                        myTask = new MyTask();
-                        myTask.execute();
+                        changNameTask = new ChangNameTask();
+                        changNameTask.execute();
                     }
+                }
+            } else if (wx_40.equals(currentWindowActivity)) {
+                if (selectNum != 0) {
+                    // selectAllTask();
+                    selectAllTask = new SelectAllTask();
+                    selectAllTask.execute();
+                }
+            } else if (wx_200.equals(currentWindowActivity)) {
+                if (selectNum != 0) {
+                    // selectAllTask();
+                    selectAllTask = new SelectAllTask();
+                    selectAllTask.execute();
                 }
             }
         }
@@ -113,7 +133,10 @@ public class AutoWeixinService extends AccessibilityService {
         autoWeixinService = null;
     }
 
-    class MyTask extends AsyncTask<List<AccessibilityNodeInfo>, Void, Boolean> {
+    /**
+     * 改名服务
+     */
+    class ChangNameTask extends AsyncTask<List<AccessibilityNodeInfo>, Void, Boolean> {
 
         @Override
         protected Boolean doInBackground(List<AccessibilityNodeInfo>... lists) {
@@ -123,9 +146,8 @@ public class AutoWeixinService extends AccessibilityService {
             }
             List<AccessibilityNodeInfo> nodeInfoList = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_haoyouliebiao);
             if (!nodeInfoList.isEmpty()) {
-
                 if (nameBeforeList.size() == 0) {
-                    if (sleep()) {
+                    if (sleepChangeName()) {
                         return true;
                     }
                     nodeInfoList = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_haoyouliebiao);
@@ -142,7 +164,7 @@ public class AutoWeixinService extends AccessibilityService {
                                             isStarFriend = true;
                                         } else {
                                             isStarFriend = false;
-                                            if(afterStarFriendNameKey.equals("")){
+                                            if (afterStarFriendNameKey.equals("")) {
                                                 afterStarFriendNameKey = name;
                                             }
                                         }
@@ -193,23 +215,23 @@ public class AutoWeixinService extends AccessibilityService {
                             changeName = nameBeforeList.get(index);
                             // 开始改名
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, changeName);
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                             PerformClickUtils.findViewIdAndClick(AutoWeixinService.this, wx_gengduo);
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, "更多");
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                             PerformClickUtils.findViewIdAndClick(AutoWeixinService.this, wx_xiugaibeizhu);
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, "设置备注及标签");
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                             accessibilityNodeInfo = getRootInActiveWindow();
                             PerformClickUtils.findViewIdAndClick(AutoWeixinService.this, wx_name1);
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, changeName);
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                             // 修改名字
@@ -223,15 +245,15 @@ public class AutoWeixinService extends AccessibilityService {
                             nameAfterList.add(string);
                             index++;
                             // 修改完成并返回
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, "完成");
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                             PerformClickUtils.performBack(AutoWeixinService.this);
-                            if (sleep()) {
+                            if (sleepChangeName()) {
                                 return true;
                             }
                         } else {
@@ -262,7 +284,7 @@ public class AutoWeixinService extends AccessibilityService {
                                         }
                                     }
                                 }
-                                if(isAfterStarFriendName){
+                                if (isAfterStarFriendName) {
                                     AccessibilityNodeInfo ani = abi.getChild(i).getChild(abi.getChild(i).getChildCount() - 1);
                                     if (ani != null && ani.getText() != null && ani.getText() != null) {
                                         String name = ani.getText().toString();
@@ -322,13 +344,13 @@ public class AutoWeixinService extends AccessibilityService {
         @Override
         protected void onPostExecute(Boolean s) {
             super.onPostExecute(s);
-            if (isStart) {
+            if (isChangeNameStart) {
                 if (s) {
-                    myTask = new MyTask();
-                    myTask.execute();
+                    changNameTask = new ChangNameTask();
+                    changNameTask.execute();
                 } else {
                     // 被动停止
-                    isStart = false;
+                    isChangeNameStart = false;
                     myName = "";
                     isStarFriend = false;
                     isAfterStarFriendName = false;
@@ -338,9 +360,10 @@ public class AutoWeixinService extends AccessibilityService {
                     changeName = "";
                     index = 0;
                     Toast.makeText(AutoWeixinService.this, "改名已经停止了！", Toast.LENGTH_SHORT).show();
-                    if (Fragment1.fragment1 != null) {
-                        Fragment1.fragment1.showStopDialog();
-                    }
+                    Fragment1.fragment1.initCreatFloatWindow();
+//                    if (Fragment1.fragment1 != null) {
+//                        Fragment1.fragment1.showStopDialog();
+//                    }
                 }
             } else {
                 // 主动停止
@@ -353,29 +376,175 @@ public class AutoWeixinService extends AccessibilityService {
                 changeName = "";
                 index = 0;
                 Toast.makeText(AutoWeixinService.this, "改名已经停止了！", Toast.LENGTH_SHORT).show();
+                Fragment1.fragment1.initCreatFloatWindow();
             }
         }
 
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            isStart = false;
+            isChangeNameStart = false;
         }
 
         @Override
         protected void onCancelled(Boolean aBoolean) {
             super.onCancelled(aBoolean);
-            isStart = false;
+            isChangeNameStart = false;
         }
     }
 
-    private boolean sleep() {
+    /**
+     * 改名睡眠
+     */
+    private boolean sleepChangeName() {
         try {
+            long time = 1500;
             Thread.sleep(time);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return !isStart;
+        return !isChangeNameStart;
+    }
+
+    /**
+     * 选择列表
+     */
+    class SelectAllTask extends AsyncTask<List<AccessibilityNodeInfo>, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(List<AccessibilityNodeInfo>... lists) {
+            AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
+            if (accessibilityNodeInfo == null) {
+                return false;
+            }
+            recycle(accessibilityNodeInfo);
+            if (nameAfterList.size() >= selectNum) {
+                return false;
+            } else {
+                // 翻页
+                if (abni != null) {
+                    boolean flag = abni.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                    if (flag) {
+                        if (sleepSelectAll()) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }else{
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean s) {
+            super.onPostExecute(s);
+            if(s){
+                selectAllTask = new SelectAllTask();
+                selectAllTask.execute();
+            }else{
+                // 停止
+                selectNum = 0;
+                nameAfterList.clear();
+                Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
+                Fragment1.fragment1.initCreatFloatWindow();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            selectNum = 0;
+        }
+
+        @Override
+        protected void onCancelled(Boolean aBoolean) {
+            super.onCancelled(aBoolean);
+           selectNum = 0;
+        }
+    }
+
+    /**
+     * 选择列表
+     */
+    private void selectAllTask() {
+        AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
+        if (accessibilityNodeInfo == null) {
+            return;
+        }
+        recycle(accessibilityNodeInfo);
+        if (nameAfterList.size() >= selectNum) {
+            // 停止
+            selectNum = 0;
+            nameAfterList.clear();
+            Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
+            Fragment1.fragment1.initCreatFloatWindow();
+        } else {
+            // 翻页
+            if (abni != null) {
+                boolean flag = abni.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                if (flag) {
+                    if (sleepSelectAll()) {
+                        // 停止
+                        selectNum = 0;
+                        nameAfterList.clear();
+                        Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
+                        Fragment1.fragment1.initCreatFloatWindow();
+                        return;
+                    }
+                    selectAllTask();
+                } else {
+                    // 停止
+                    selectNum = 0;
+                    nameAfterList.clear();
+                    Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
+                    Fragment1.fragment1.initCreatFloatWindow();
+                }
+            }
+        }
+    }
+
+    /**
+     * 选择列表递归
+     */
+    public void recycle(AccessibilityNodeInfo info) {
+        if (info.getChildCount() == 0) {
+            if (info.getClassName().toString().contains("CheckBox")) {
+                if (nameAfterList.size() >= selectNum) {
+                    // 停止
+                } else {
+                    if (!info.isChecked() && info.isCheckable()) {
+                        performClick(info);
+                        nameAfterList.add(info.getClassName().toString());
+                        abni = info.getParent().getParent();
+                        if (sleepSelectAll()) {
+
+                        }
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < info.getChildCount(); i++) {
+                if (info.getChild(i) != null) {
+                    recycle(info.getChild(i));
+                }
+            }
+        }
+    }
+
+    /**
+     * 选择睡眠
+     */
+    private boolean sleepSelectAll() {
+        try {
+            long time = 1000;
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return selectNum == 0;
     }
 
 }

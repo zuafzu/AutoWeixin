@@ -81,13 +81,15 @@ public class WindowManagerUtils {
                         nowY = event.getRawY(); // 计算XY坐标偏移量
                         tranX = nowX - lastX;
                         tranY = nowY - lastY; // 移动悬浮窗
-                        lp.x += tranX;
+                        lp.x -= tranX;
                         lp.y += tranY; //更新悬浮窗位置
                         windowManager.updateViewLayout(view, lp); //记录当前坐标作为下一次计算的上一次移动的位置坐标
                         lastX = nowX;
                         lastY = nowY;
                         break;
                     case MotionEvent.ACTION_UP:
+                        // 靠边
+
                         break;
                 }
                 return ret;

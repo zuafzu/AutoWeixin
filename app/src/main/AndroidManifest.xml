@@ -28,7 +28,7 @@
             android:name=".accessibility.AutoWeixinService"
             android:enabled="true"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="@string/accessibility_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -40,7 +40,7 @@
         </service>
 
         <activity android:name=".activity.Main2Activity" />
-        <activity android:name=".activity.Main3Activity"></activity>
+        <activity android:name=".activity.Main3Activity" />
     </application>
 
 </manifest>

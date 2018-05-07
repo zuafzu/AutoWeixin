@@ -50,9 +50,11 @@
                             android:id="@+id/editText"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginRight="8dp"
                             android:layout_weight="1"
                             android:background="@null"
                             android:hint="默认当前月份+点+日期（如：5.3）"
+                            android:paddingLeft="16dp"
                             android:textSize="14sp" />
 
                         <ToggleButton
@@ -81,18 +83,26 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="前缀后编号："
+                            android:text="编号模式："
                             android:textColor="@android:color/black" />
 
-                        <TextView
+                        <android.support.v7.widget.AppCompatSpinner
+                            android:id="@+id/appCompatSpinner"
+                            android:paddingLeft="0dp"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:background="@null"
-                            android:hint="+横杠+编号（如：-1）"
-                            android:textSize="14sp" />
+                            android:entries="@array/num"
+                            app:theme="@style/myDropTheme" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="8dp"
+                            android:src="@mipmap/ic_arr" />
 
                         <ToggleButton
+                            android:visibility="gone"
                             android:id="@+id/toggleButton2"
                             android:layout_width="64dp"
                             android:layout_height="32dp"
@@ -125,10 +135,12 @@
                             android:id="@+id/editText2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginRight="8dp"
                             android:layout_weight="1"
                             android:background="@null"
                             android:hint="默认为0，即最左边插入"
                             android:inputType="number"
+                            android:paddingLeft="16dp"
                             android:textSize="14sp" />
 
                         <ToggleButton
@@ -164,9 +176,11 @@
                             android:id="@+id/editText3"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginRight="8dp"
                             android:layout_weight="1"
                             android:background="@null"
                             android:hint="默认全部修改，不修改包含关键字的用户"
+                            android:paddingLeft="2dp"
                             android:textSize="14sp" />
 
                         <ToggleButton
