@@ -3,7 +3,9 @@ package com.example.solo.autoweixin.fragment;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
@@ -21,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -66,7 +70,7 @@ public class Fragment1 extends Fragment {
     // 悬浮窗
     private Toast mToast;
     private View windowView;
-    private TextView textView1, textView2, textView3;
+    private Button textView1, textView2, textView3, textView4;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,10 +94,12 @@ public class Fragment1 extends Fragment {
 
     public void initCreatFloatWindow() {
         creatFloatWindow();
+        setWindowCanClick(0);
         if (AutoWeixinService.isChangeNameStart) {
             tv_btn.setText("停止备注");
             if (textView1 != null) {
                 textView1.setText("停止\n备注");
+                setWindowCanClick(1);
             }
         } else {
             tv_btn.setText("开始备注");
@@ -111,6 +117,7 @@ public class Fragment1 extends Fragment {
         } else if (AutoWeixinService.selectNum == 40) {
             if (textView2 != null) {
                 textView2.setText("群邀请\n关闭");
+                setWindowCanClick(2);
             }
             if (textView3 != null) {
                 textView3.setText("群发\n勾选");
@@ -121,6 +128,7 @@ public class Fragment1 extends Fragment {
             }
             if (textView3 != null) {
                 textView3.setText("群发\n关闭");
+                setWindowCanClick(3);
             }
         }
         if (windowView != null && isResume) {
@@ -208,6 +216,7 @@ public class Fragment1 extends Fragment {
             public void onClick(View view) {
                 if (accessibilityManager.isEnabled()) {
                     if (AutoWeixinService.isChangeNameStart) {
+                        setWindowCanClick(0);
                         showStopDialog();
                     } else {
                         showStartDialog(false);
@@ -416,10 +425,11 @@ public class Fragment1 extends Fragment {
                 @Override
                 public void onClick(View view) {
                     if (AutoWeixinService.isChangeNameStart) {
+                        setWindowCanClick(0);
                         showStopDialog();
                     } else {
                         if (showStartDialog(true)) {
-                            // Toast.makeText(getActivity(), "请先开始备注，再进入微信界面", Toast.LENGTH_SHORT).show();
+
                         }
                     }
                 }
@@ -429,9 +439,11 @@ public class Fragment1 extends Fragment {
                 @Override
                 public void onClick(View view) {
                     if (AutoWeixinService.selectNum == 40) {
+                        setWindowCanClick(0);
                         AutoWeixinService.selectNum = 0;
                         textView2.setText("群邀请\n勾选");
                     } else {
+                        setWindowCanClick(2);
                         showStopDialog();
                         AutoWeixinService.selectNum = 40;
                         textView2.setText("群邀请\n关闭");
@@ -453,9 +465,11 @@ public class Fragment1 extends Fragment {
                 @Override
                 public void onClick(View view) {
                     if (AutoWeixinService.selectNum == 200) {
+                        setWindowCanClick(0);
                         AutoWeixinService.selectNum = 0;
                         textView3.setText("群发\n勾选");
                     } else {
+                        setWindowCanClick(3);
                         showStopDialog();
                         AutoWeixinService.selectNum = 200;
                         textView3.setText("群发\n关闭");
@@ -472,17 +486,49 @@ public class Fragment1 extends Fragment {
                     }
                 }
             });
-            TextView textView4 = windowView.findViewById(R.id.textView4);
+            textView4 = windowView.findViewById(R.id.textView4);
             textView4.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     AutoWeixinService.selectNum = 0;
                     showStopDialog();
-
                     comeBack();
                 }
             });
             WindowManagerUtils.startView(Objects.requireNonNull(getActivity()).getApplication(), windowView);
+        }
+    }
+
+    @SuppressLint("ResourceType")
+    private void setWindowCanClick(int type) {
+        if (windowView != null) {
+            textView1.setClickable(false);
+            textView2.setClickable(false);
+            textView3.setClickable(false);
+            textView4.setClickable(false);
+            textView1.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
+            textView2.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
+            textView3.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
+            textView4.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
+            if (type == 0) {
+                textView1.setClickable(true);
+                textView2.setClickable(true);
+                textView3.setClickable(true);
+                textView4.setClickable(true);
+                textView1.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView2.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView3.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView4.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+            } else if (type == 1) {
+                textView1.setClickable(true);
+                textView1.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+            } else if (type == 2) {
+                textView2.setClickable(true);
+                textView2.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+            } else if (type == 3) {
+                textView3.setClickable(true);
+                textView3.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+            }
         }
     }
 
@@ -510,6 +556,7 @@ public class Fragment1 extends Fragment {
             alertDialog.show();
             return false;
         }
+        setWindowCanClick(1);
         AutoWeixinService.selectNum = 0;
         AutoWeixinService.isChangeNameStart = true;
         if (textView1 != null) {

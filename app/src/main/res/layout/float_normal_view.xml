@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="50dp"
-    android:gravity="center"
-    android:orientation="horizontal"
     android:layout_height="wrap_content"
-    android:background="#aa000000">
+    android:background="#aa000000"
+    android:gravity="center"
+    android:orientation="horizontal">
 
     <View
         android:layout_width="2px"
@@ -22,9 +22,9 @@
             android:background="@color/colorAccent" />
 
         <ImageView
-            android:adjustViewBounds="true"
             android:layout_width="49dp"
             android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:src="@mipmap/ic_drag"
@@ -35,13 +35,14 @@
             android:layout_height="2px"
             android:background="@color/colorAccent" />
 
-        <TextView
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+        <Button
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:gravity="center"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
             android:text="开始\n备注"
             android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
@@ -51,13 +52,14 @@
             android:layout_height="2px"
             android:background="@color/colorAccent" />
 
-        <TextView
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+        <Button
             android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:gravity="center"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
             android:text="群邀请\n勾选"
             android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
@@ -67,13 +69,14 @@
             android:layout_height="2px"
             android:background="@color/colorAccent" />
 
-        <TextView
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+        <Button
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:background="@android:color/transparent"
             android:gravity="center"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
             android:text="群发\n勾选"
             android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
@@ -83,13 +86,14 @@
             android:layout_height="2px"
             android:background="@color/colorAccent" />
 
-        <TextView
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+        <Button
             android:id="@+id/textView4"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:background="@android:color/transparent"
             android:gravity="center"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
             android:text="返回\n改名宝"
             android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />

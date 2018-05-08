@@ -5,10 +5,10 @@
     <string name="my">我的</string>
 
     <string-array name="num">
-        <item>无编号</item>
-        <item>顺序编号（如：-4999）</item>
-        <item>群邀请编号（如：-邀1-40）</item>
-        <item>群发编号（如：-发1-200）</item>
+        <item>无编号模式</item>
+        <item>顺序编号模式（如：-4999）</item>
+        <item>群邀请编号模式（如：-邀1-40）</item>
+        <item>群发编号模式（如：-发1-200）</item>
     </string-array>
 
 </resources>

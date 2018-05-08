@@ -425,7 +425,7 @@ public class AutoWeixinService extends AccessibilityService {
                 if (abni != null) {
                     boolean flag = abni.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
                     if (flag) {
-                        if (sleepSelectAll()) {
+                        if (sleepSelectAll(1000)) {
                             return false;
                         }
                     } else {
@@ -464,82 +464,42 @@ public class AutoWeixinService extends AccessibilityService {
             super.onCancelled(aBoolean);
            selectNum = 0;
         }
-    }
 
-    /**
-     * 选择列表
-     */
-    private void selectAllTask() {
-        AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
-        if (accessibilityNodeInfo == null) {
-            return;
-        }
-        recycle(accessibilityNodeInfo);
-        if (nameAfterList.size() >= selectNum) {
-            // 停止
-            selectNum = 0;
-            nameAfterList.clear();
-            Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
-            Fragment1.fragment1.initCreatFloatWindow();
-        } else {
-            // 翻页
-            if (abni != null) {
-                boolean flag = abni.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
-                if (flag) {
-                    if (sleepSelectAll()) {
+        /**
+         * 选择列表递归
+         */
+        public void recycle(AccessibilityNodeInfo info) {
+            if (info.getChildCount() == 0) {
+                if (info.getClassName().toString().contains("CheckBox")) {
+                    if (nameAfterList.size() >= selectNum) {
                         // 停止
-                        selectNum = 0;
-                        nameAfterList.clear();
-                        Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
-                        Fragment1.fragment1.initCreatFloatWindow();
-                        return;
-                    }
-                    selectAllTask();
-                } else {
-                    // 停止
-                    selectNum = 0;
-                    nameAfterList.clear();
-                    Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
-                    Fragment1.fragment1.initCreatFloatWindow();
-                }
-            }
-        }
-    }
+                    } else {
+                        if (!info.isChecked() && info.isCheckable()) {
+                            performClick(info);
+                            nameAfterList.add(info.getClassName().toString());
+                            abni = info.getParent().getParent();
+                            if (sleepSelectAll(500)) {
 
-    /**
-     * 选择列表递归
-     */
-    public void recycle(AccessibilityNodeInfo info) {
-        if (info.getChildCount() == 0) {
-            if (info.getClassName().toString().contains("CheckBox")) {
-                if (nameAfterList.size() >= selectNum) {
-                    // 停止
-                } else {
-                    if (!info.isChecked() && info.isCheckable()) {
-                        performClick(info);
-                        nameAfterList.add(info.getClassName().toString());
-                        abni = info.getParent().getParent();
-                        if (sleepSelectAll()) {
-
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            for (int i = 0; i < info.getChildCount(); i++) {
-                if (info.getChild(i) != null) {
-                    recycle(info.getChild(i));
+            } else {
+                for (int i = 0; i < info.getChildCount(); i++) {
+                    if (info.getChild(i) != null) {
+                        recycle(info.getChild(i));
+                    }
                 }
             }
         }
+
     }
 
     /**
      * 选择睡眠
      */
-    private boolean sleepSelectAll() {
+    private boolean sleepSelectAll(int time) {
         try {
-            long time = 1000;
             Thread.sleep(time);
         } catch (InterruptedException e) {
             e.printStackTrace();
