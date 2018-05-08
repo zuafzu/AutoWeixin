@@ -41,10 +41,9 @@
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
             android:gravity="center"
             android:text="开始\n备注"
-            android:textColor="@android:color/white"
+            android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
 
         <View
@@ -58,10 +57,9 @@
             android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
             android:gravity="center"
             android:text="群邀请\n勾选"
-            android:textColor="@android:color/white"
+            android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
 
         <View
@@ -75,10 +73,9 @@
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="?android:selectableItemBackground"
             android:gravity="center"
             android:text="群发\n勾选"
-            android:textColor="@android:color/white"
+            android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
 
         <View
@@ -92,10 +89,9 @@
             android:id="@+id/textView4"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="?android:selectableItemBackground"
             android:gravity="center"
             android:text="返回\n改名宝"
-            android:textColor="@android:color/white"
+            android:textColor="@drawable/window_btn_selector"
             android:textSize="12sp" />
 
         <View

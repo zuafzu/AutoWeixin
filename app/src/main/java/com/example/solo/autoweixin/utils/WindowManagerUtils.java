@@ -3,6 +3,7 @@ package com.example.solo.autoweixin.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,9 +17,14 @@ public class WindowManagerUtils {
     private static WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
     @SuppressLint("StaticFieldLeak")
     private static View view;
+    private static int screenWidth = 0;
 
     @SuppressLint("ClickableViewAccessibility")
     public static void startView(Context context, View mview) {
+        // 通过Resources获取屏幕宽度
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        screenWidth = dm.widthPixels;
+
         // 1、获取系统级别的
         if (windowManager == null) {
             windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
@@ -88,8 +94,14 @@ public class WindowManagerUtils {
                         lastY = nowY;
                         break;
                     case MotionEvent.ACTION_UP:
-                        // 靠边
-
+                        // 自动靠边
+                        if ((screenWidth - view.getWidth()) / 2 > lp.x) {
+                            lp.x = 0;
+                            windowManager.updateViewLayout(view, lp);
+                        } else {
+                            lp.x = screenWidth;
+                            windowManager.updateViewLayout(view, lp);
+                        }
                         break;
                 }
                 return ret;
