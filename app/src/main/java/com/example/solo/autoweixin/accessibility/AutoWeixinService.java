@@ -24,6 +24,7 @@ public class AutoWeixinService extends AccessibilityService {
     public static final String MM = "com.tencent.mm";
 
     public static String wx_zhujiemian = "com.tencent.mm.ui.LauncherUI";//主界面
+    public static String wx_yonghuxiangqing = "com.tencent.mm.plugin.profile.ui.ContactInfoUI";// 好友详情页面
     public static String wx_yonghuming = "com.tencent.mm:id/cbx";//用户名id("com.tencent.mm:id/cdm"6.6.5)
     public static String wx_haoyouliebiao = "com.tencent.mm:id/j8";//好友列表id（"com.tencent.mm:id/iq"6.6.5）
     public static String wx_gengduo = "com.tencent.mm:id/hi";//右上角更多按钮id（"com.tencent.mm:id/he"6.6.5）
@@ -35,6 +36,8 @@ public class AutoWeixinService extends AccessibilityService {
     public static String wx_200 = "com.tencent.mm.plugin.masssend.ui.MassSendSelectContactUI";// 200人界面
 
     public static AutoWeixinService autoWeixinService;
+    private String currentWindowActivity = "";
+    private String errString = "";// 错误信息提示
 
     public static boolean isChangeNameStart = false;// 是否开启改名
     private String myName = "";// 自己的用户名
@@ -88,7 +91,7 @@ public class AutoWeixinService extends AccessibilityService {
         //如果手机当前界面的窗口发送变化
         if (accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             //获取当前activity的类名:
-            String currentWindowActivity = accessibilityEvent.getClassName().toString();
+            currentWindowActivity = accessibilityEvent.getClassName().toString();
             // Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
             if (wx_zhujiemian.equals(currentWindowActivity)) {// 批量改备注
                 if (isChangeNameStart) {
@@ -102,6 +105,9 @@ public class AutoWeixinService extends AccessibilityService {
                         isAfterStarFriendName = false;
                         afterStarFriendNameKey = "";
                         nameAfterList.clear();
+                        for (int i = 0; i < Fragment1.lastNumTotal; i++) {
+                            nameAfterList.add(" ");
+                        }
                         nameBeforeList.clear();
                         changeName = "";
                         index = 0;
@@ -197,9 +203,10 @@ public class AutoWeixinService extends AccessibilityService {
                                                     if (StringUtils.keyName.equals("")) {
                                                         nameBeforeList.add(name);
                                                     } else {
-                                                        if (StringUtils.keyName.contains("&")) {
+                                                        StringUtils.keyName = StringUtils.keyName.replace("，", ",");
+                                                        if (StringUtils.keyName.contains(",")) {
                                                             boolean hasSame = false;
-                                                            String[] keyNames = StringUtils.keyName.split("&");
+                                                            String[] keyNames = StringUtils.keyName.split(",");
                                                             for (int j = 0; j < keyNames.length; j++) {
                                                                 if (!keyNames[j].isEmpty() && name.contains(keyNames[j])) {
                                                                     hasSame = true;
@@ -267,6 +274,11 @@ public class AutoWeixinService extends AccessibilityService {
                             }
                             // 添加记录
                             nameAfterList.add(string);
+                            // 记录上次改名的最后一个人名字以及编号模式
+                            Fragment1.lastName = string;
+                            Fragment1.lastNumType = StringUtils.numType;
+                            Fragment1.lastNumTotal = nameAfterList.size();
+
                             index++;
                             // 修改完成并返回
                             if (sleepChangeName()) {
@@ -276,7 +288,12 @@ public class AutoWeixinService extends AccessibilityService {
                             if (sleepChangeName()) {
                                 return true;
                             }
-                            PerformClickUtils.performBack(AutoWeixinService.this);
+                            if (currentWindowActivity.equals(wx_yonghuxiangqing)) {
+                                PerformClickUtils.performBack(AutoWeixinService.this);
+                            } else {
+                                errString = "修改备注过程中出现异常，";
+                                return false;
+                            }
                             if (sleepChangeName()) {
                                 return true;
                             }
@@ -325,9 +342,10 @@ public class AutoWeixinService extends AccessibilityService {
                                                     if (StringUtils.keyName.equals("")) {
                                                         nameBeforeList.add(name);
                                                     } else {
-                                                        if (StringUtils.keyName.contains("&")) {
+                                                        StringUtils.keyName = StringUtils.keyName.replace("，", ",");
+                                                        if (StringUtils.keyName.contains(",")) {
                                                             boolean hasSame = false;
-                                                            String[] keyNames = StringUtils.keyName.split("&");
+                                                            String[] keyNames = StringUtils.keyName.split(",");
                                                             for (int j = 0; j < keyNames.length; j++) {
                                                                 if (!keyNames[j].isEmpty() && name.contains(keyNames[j])) {
                                                                     hasSame = true;
@@ -356,8 +374,6 @@ public class AutoWeixinService extends AccessibilityService {
                         boolean hasSame = false;
                         for (int j = 0; j < nameAfterList.size(); j++) {
                             if (nameBeforeList.get(i).equals(nameAfterList.get(j))) {
-                                Log.e("cyf", "nameBeforeList.get(i) : " + nameBeforeList.get(i));
-                                Log.e("cyf", "nameAfterList.get(j) : " + nameAfterList.get(j));
                                 hasSame = true;
                                 break;
                             }
@@ -397,11 +413,12 @@ public class AutoWeixinService extends AccessibilityService {
                     nameBeforeList.clear();
                     changeName = "";
                     index = 0;
-                    Toast.makeText(AutoWeixinService.this, "改名已经停止了！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AutoWeixinService.this, errString + "修改备注已经停止了！", Toast.LENGTH_SHORT).show();
                     Fragment1.fragment1.initCreatFloatWindow();
-//                    if (Fragment1.fragment1 != null) {
-//                        Fragment1.fragment1.showStopDialog();
-//                    }
+                    if (!errString.equals("")) {
+                        errString = "";
+                        Fragment1.fragment1.comeBack();
+                    }
                 }
             } else {
                 // 主动停止
@@ -413,7 +430,7 @@ public class AutoWeixinService extends AccessibilityService {
                 nameBeforeList.clear();
                 changeName = "";
                 index = 0;
-                Toast.makeText(AutoWeixinService.this, "改名已经停止了！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AutoWeixinService.this, "修改备注已经停止了！", Toast.LENGTH_SHORT).show();
                 Fragment1.fragment1.initCreatFloatWindow();
             }
         }

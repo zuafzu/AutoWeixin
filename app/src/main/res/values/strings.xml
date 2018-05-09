@@ -11,4 +11,11 @@
         <item>群发编号模式（如：-发1-200）</item>
     </string-array>
 
+    <string-array name="num2">
+        <item>无编号模式</item>
+        <item>顺序编号模式</item>
+        <item>群邀请编号模式</item>
+        <item>群发编号模式</item>
+    </string-array>
+
 </resources>
