@@ -187,7 +187,7 @@
                             android:layout_marginRight="8dp"
                             android:layout_weight="1"
                             android:background="@null"
-                            android:hint="默认全部修改，不修改包含关键字的用户"
+                            android:hint="默认全部修改，不修改包含关键字的用户；多个关键字用&amp;分隔"
                             android:paddingLeft="2dp"
                             android:textSize="14sp" />
 

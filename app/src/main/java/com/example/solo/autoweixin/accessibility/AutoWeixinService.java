@@ -33,7 +33,6 @@ public class AutoWeixinService extends AccessibilityService {
 
     public static String wx_40 = "com.tencent.mm.ui.contact.SelectContactUI";// 40人界面
     public static String wx_200 = "com.tencent.mm.plugin.masssend.ui.MassSendSelectContactUI";// 200人界面
-    public static String wx_xuanzelianxiren = " com.tencent.mm:id/fw";//选择联系人列表
 
     public static AutoWeixinService autoWeixinService;
 
@@ -72,9 +71,12 @@ public class AutoWeixinService extends AccessibilityService {
             wx_name1 = "com.tencent.mm:id/ap2";
             wx_name2 = "com.tencent.mm:id/ap2";
         }
-        // 初始化
         autoWeixinService = this;
+        // 初始化
         myName = "";
+        isStarFriend = false;
+        isAfterStarFriendName = false;
+        afterStarFriendNameKey = "";
         nameAfterList.clear();
         nameBeforeList.clear();
         changeName = "";
@@ -87,7 +89,7 @@ public class AutoWeixinService extends AccessibilityService {
         if (accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             //获取当前activity的类名:
             String currentWindowActivity = accessibilityEvent.getClassName().toString();
-            Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
+            // Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
             if (wx_zhujiemian.equals(currentWindowActivity)) {// 批量改备注
                 if (isChangeNameStart) {
                     AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
@@ -95,6 +97,14 @@ public class AutoWeixinService extends AccessibilityService {
                         return;
                     }
                     if ("".equals(myName)) {
+                        myName = "";
+                        isStarFriend = false;
+                        isAfterStarFriendName = false;
+                        afterStarFriendNameKey = "";
+                        nameAfterList.clear();
+                        nameBeforeList.clear();
+                        changeName = "";
+                        index = 0;
                         // 获取自己用户名
                         PerformClickUtils.findTextAndClick(this, "我");
                         if (sleepChangeName()) {
@@ -187,8 +197,22 @@ public class AutoWeixinService extends AccessibilityService {
                                                     if (StringUtils.keyName.equals("")) {
                                                         nameBeforeList.add(name);
                                                     } else {
-                                                        if (!name.contains(StringUtils.keyName)) {
-                                                            nameBeforeList.add(name);
+                                                        if (StringUtils.keyName.contains("&")) {
+                                                            boolean hasSame = false;
+                                                            String[] keyNames = StringUtils.keyName.split("&");
+                                                            for (int j = 0; j < keyNames.length; j++) {
+                                                                if (!keyNames[j].isEmpty() && name.contains(keyNames[j])) {
+                                                                    hasSame = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            if (!hasSame) {
+                                                                nameBeforeList.add(name);
+                                                            }
+                                                        } else {
+                                                            if (!name.contains(StringUtils.keyName)) {
+                                                                nameBeforeList.add(name);
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -301,8 +325,22 @@ public class AutoWeixinService extends AccessibilityService {
                                                     if (StringUtils.keyName.equals("")) {
                                                         nameBeforeList.add(name);
                                                     } else {
-                                                        if (!name.contains(StringUtils.keyName)) {
-                                                            nameBeforeList.add(name);
+                                                        if (StringUtils.keyName.contains("&")) {
+                                                            boolean hasSame = false;
+                                                            String[] keyNames = StringUtils.keyName.split("&");
+                                                            for (int j = 0; j < keyNames.length; j++) {
+                                                                if (!keyNames[j].isEmpty() && name.contains(keyNames[j])) {
+                                                                    hasSame = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            if (!hasSame) {
+                                                                nameBeforeList.add(name);
+                                                            }
+                                                        } else {
+                                                            if (!name.contains(StringUtils.keyName)) {
+                                                                nameBeforeList.add(name);
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -431,7 +469,7 @@ public class AutoWeixinService extends AccessibilityService {
                     } else {
                         return false;
                     }
-                }else{
+                } else {
                     return false;
                 }
             }
@@ -441,10 +479,10 @@ public class AutoWeixinService extends AccessibilityService {
         @Override
         protected void onPostExecute(Boolean s) {
             super.onPostExecute(s);
-            if(s){
+            if (s) {
                 selectAllTask = new SelectAllTask();
                 selectAllTask.execute();
-            }else{
+            } else {
                 // 停止
                 selectNum = 0;
                 nameAfterList.clear();
@@ -462,7 +500,7 @@ public class AutoWeixinService extends AccessibilityService {
         @Override
         protected void onCancelled(Boolean aBoolean) {
             super.onCancelled(aBoolean);
-           selectNum = 0;
+            selectNum = 0;
         }
 
         /**
