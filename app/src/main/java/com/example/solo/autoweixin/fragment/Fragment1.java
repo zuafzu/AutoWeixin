@@ -1,11 +1,10 @@
 package com.example.solo.autoweixin.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.bumptech.glide.load.engine.Resource;
 import com.example.solo.autoweixin.R;
 import com.example.solo.autoweixin.accessibility.AutoWeixinService;
 import com.example.solo.autoweixin.activity.Main2Activity;
@@ -57,6 +57,7 @@ public class Fragment1 extends Fragment {
     public static int lastNumType = 0;//上次修改编号模式
     public static int lastNumTotal = 0;
 
+    private Context context;
     private AccessibilityManager accessibilityManager;
 
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -68,7 +69,7 @@ public class Fragment1 extends Fragment {
     private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6;
 
     private boolean isResume = false;
-    private boolean isShowWindow = true;
+    private boolean isShowWindowPermission = true;
     private boolean isStartGroup = false;//判断是否开启群聊或者群发
 
     // 悬浮窗
@@ -79,6 +80,7 @@ public class Fragment1 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragment1 = this;
+        context = Objects.requireNonNull(getActivity()).getApplicationContext();
         View view = inflater.inflate(R.layout.main_tab_01, container, false);
         initView(view);
         initChangeName(view);
@@ -88,6 +90,7 @@ public class Fragment1 extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        context = Objects.requireNonNull(getActivity()).getApplicationContext();
         isResume = true;
         if (accessibilityManager.isEnabled()) {
             initCreatFloatWindow();
@@ -142,7 +145,13 @@ public class Fragment1 extends Fragment {
                 setWindowCanClick(3);
             }
         }
-        if (windowView != null && isResume) {
+        if (isResume) {
+            setWindowViewGONE();
+        }
+    }
+
+    public void setWindowViewGONE() {
+        if (windowView != null) {
             windowView.setVisibility(View.GONE);
         }
     }
@@ -169,6 +178,8 @@ public class Fragment1 extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopService();
+        setWindowViewGONE();
         fragment1 = null;
     }
 
@@ -182,19 +193,19 @@ public class Fragment1 extends Fragment {
         lastName = "";
         lastNumType = 0;
         lastNumTotal = 0;
-        accessibilityManager = (AccessibilityManager) Objects.requireNonNull(getActivity()).getSystemService(ACCESSIBILITY_SERVICE);
+        accessibilityManager = (AccessibilityManager) context.getSystemService(ACCESSIBILITY_SERVICE);
         accessibilityManager.addAccessibilityStateChangeListener(new AccessibilityManager.AccessibilityStateChangeListener() {
             @Override
             public void onAccessibilityStateChanged(boolean b) {
                 if (b) {
                     try {
-                        Intent intent = new Intent(Objects.requireNonNull(getActivity()), MainActivity.class);
-                        startActivity(intent);
+                        Intent intent = new Intent(context, MainActivity.class);
+                        context.startActivity(intent);
                     } catch (Exception e) {
                         Intent intent = new Intent();
                         intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
                         intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.MainActivity");
-                        startActivity(intent);
+                        context.startActivity(intent);
                     }
                     // 开启悬浮窗
                     creatFloatWindow();
@@ -223,15 +234,15 @@ public class Fragment1 extends Fragment {
         slideShowView.setTimeInterval(5);
         String imgs[] = new String[1];
         imgs[0] = UrlUtils.urlImg;
-        slideShowView.initUI(getActivity(), 2, imgs);
+        slideShowView.initUI(context, 2, imgs);
         tv_btn = view.findViewById(R.id.tv_btn);
         tv_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (accessibilityManager.isEnabled()) {
                     if (AutoWeixinService.isChangeNameStart) {
-                        setWindowCanClick(0);
-                        showStopDialog();
+//                        setWindowCanClick(0);
+                        stopService();
                     } else {
                         if (tv_btn.getText().toString().equals("停止")) {
                             // tv_btn.setText("开始备注");
@@ -244,16 +255,16 @@ public class Fragment1 extends Fragment {
                                     tv_btn.setText("停止");
                                     isStartGroup = true;
                                     try {
-                                        Intent intent = new Intent(Objects.requireNonNull(getActivity()), Main3Activity.class);
-                                        startActivity(intent);
+                                        Intent intent = new Intent(context, Main3Activity.class);
+                                        context.startActivity(intent);
                                     } catch (Exception e) {
                                         Intent intent = new Intent();
                                         intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
                                         intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
-                                        startActivity(intent);
+                                        context.startActivity(intent);
                                     }
                                 } else {
-                                    Toast.makeText(getActivity(), "请先开启改备注、群邀请、群发中至少任意一个功能", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, "请先开启改备注、群邀请、群发中至少任意一个功能", Toast.LENGTH_SHORT).show();
                                 }
                             } else {
                                 showStartDialog(false);
@@ -463,9 +474,9 @@ public class Fragment1 extends Fragment {
     private void creatFloatWindow() {
         if (windowView == null) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                if (!Utils.getAppOps(getActivity())) {
+                if (!Utils.getAppOps(context)) {
                     // 防止创建多个
-                    if (alertDialog != null) {
+                    if (alertDialog != null && alertDialog.isShowing()) {
                         alertDialog.dismiss();
                     }
                     // 创建对话框
@@ -489,110 +500,116 @@ public class Fragment1 extends Fragment {
                     builder.setNegativeButton("不再提醒", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            isShowWindow = false;
+                            isShowWindowPermission = false;
                             alertDialog.dismiss();
                         }
                     });
                     alertDialog = builder.create();
                     alertDialog.setCancelable(false);
-                    if (isShowWindow) {
+                    if (isShowWindowPermission) {
                         alertDialog.show();
                     }
                     return;
                 }
             }
-            windowView = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.float_normal_view, null);
-            textView1 = windowView.findViewById(R.id.textView);
-            textView1.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (AutoWeixinService.isChangeNameStart) {
-                        setWindowCanClick(0);
-                        showStopDialog();
-                    } else {
-                        if (showStartDialog(true)) {
+            if (getActivity() != null) {
+                LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                if (inflater != null) {
+                    windowView = inflater.inflate(R.layout.float_normal_view, null);
+                    textView1 = windowView.findViewById(R.id.textView);
+                    textView1.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (AutoWeixinService.isChangeNameStart) {
+//                        setWindowCanClick(0);
+                                stopService();
+                            } else {
+                                if (showStartDialog(true)) {
 
+                                }
+                            }
                         }
-                    }
-                }
-            });
-            if (toggleButton1.isChecked() || StringUtils.numType != 0) {
-                textView1.setVisibility(View.VISIBLE);
-            } else {
-                textView1.setVisibility(View.GONE);
-            }
-            textView2 = windowView.findViewById(R.id.textView2);
-            textView2.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (AutoWeixinService.selectNum == 40) {
-                        setWindowCanClick(0);
-                        AutoWeixinService.selectNum = 0;
-                        textView2.setText("群邀请\n勾选");
+                    });
+                    if (toggleButton1.isChecked() || StringUtils.numType != 0) {
+                        textView1.setVisibility(View.VISIBLE);
                     } else {
-                        setWindowCanClick(2);
-                        showStopDialog();
-                        AutoWeixinService.selectNum = 40;
-                        textView2.setText("群邀请\n关闭");
-                        textView3.setText("群发\n勾选");
-                        try {
-                            Intent intent = new Intent(Objects.requireNonNull(getActivity()), Main3Activity.class);
-                            startActivity(intent);
-                        } catch (Exception e) {
-                            Intent intent = new Intent();
-                            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                            intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
-                            startActivity(intent);
-                        }
+                        textView1.setVisibility(View.GONE);
                     }
-                }
-            });
-            if (toggleButton5.isChecked()) {
-                textView2.setVisibility(View.VISIBLE);
-            } else {
-                textView2.setVisibility(View.GONE);
-            }
-            textView3 = windowView.findViewById(R.id.textView3);
-            textView3.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (AutoWeixinService.selectNum == 200) {
-                        setWindowCanClick(0);
-                        AutoWeixinService.selectNum = 0;
-                        textView3.setText("群发\n勾选");
+                    textView2 = windowView.findViewById(R.id.textView2);
+                    textView2.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (AutoWeixinService.selectNum == 40) {
+//                        setWindowCanClick(0);
+//                        AutoWeixinService.selectNum = 0;
+                                stopService();
+                                textView2.setText("群邀请\n勾选");
+                            } else {
+                                stopService();
+                                setWindowCanClick(2);
+                                AutoWeixinService.selectNum = 40;
+                                textView2.setText("群邀请\n关闭");
+                                textView3.setText("群发\n勾选");
+                                try {
+                                    Intent intent = new Intent(context, Main3Activity.class);
+                                    context.startActivity(intent);
+                                } catch (Exception e) {
+                                    Intent intent = new Intent();
+                                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                                    intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
+                                    context.startActivity(intent);
+                                }
+                            }
+                        }
+                    });
+                    if (toggleButton5.isChecked()) {
+                        textView2.setVisibility(View.VISIBLE);
                     } else {
-                        setWindowCanClick(3);
-                        showStopDialog();
-                        AutoWeixinService.selectNum = 200;
-                        textView3.setText("群发\n关闭");
-                        textView2.setText("群邀请\n勾选");
-                        try {
-                            Intent intent = new Intent(Objects.requireNonNull(getActivity()), Main3Activity.class);
-                            startActivity(intent);
-                        } catch (Exception e) {
-                            Intent intent = new Intent();
-                            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                            intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
-                            startActivity(intent);
-                        }
+                        textView2.setVisibility(View.GONE);
                     }
+                    textView3 = windowView.findViewById(R.id.textView3);
+                    textView3.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (AutoWeixinService.selectNum == 200) {
+//                        setWindowCanClick(0);
+//                        AutoWeixinService.selectNum = 0;
+                                stopService();
+                                textView3.setText("群发\n勾选");
+                            } else {
+                                stopService();
+                                setWindowCanClick(3);
+                                AutoWeixinService.selectNum = 200;
+                                textView3.setText("群发\n关闭");
+                                textView2.setText("群邀请\n勾选");
+                                try {
+                                    Intent intent = new Intent(context, Main3Activity.class);
+                                    context.startActivity(intent);
+                                } catch (Exception e) {
+                                    Intent intent = new Intent();
+                                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                                    intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
+                                    context.startActivity(intent);
+                                }
+                            }
+                        }
+                    });
+                    if (toggleButton6.isChecked()) {
+                        textView3.setVisibility(View.VISIBLE);
+                    } else {
+                        textView3.setVisibility(View.GONE);
+                    }
+                    textView4 = windowView.findViewById(R.id.textView4);
+                    textView4.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            stopService();
+                            comeBack();
+                        }
+                    });
+                    WindowManagerUtils.startView(context, windowView);
                 }
-            });
-            if (toggleButton6.isChecked()) {
-                textView3.setVisibility(View.VISIBLE);
-            } else {
-                textView3.setVisibility(View.GONE);
             }
-            textView4 = windowView.findViewById(R.id.textView4);
-            textView4.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    AutoWeixinService.selectNum = 0;
-                    showStopDialog();
-                    comeBack();
-                }
-            });
-            WindowManagerUtils.startView(Objects.requireNonNull(getActivity()).getApplication(), windowView);
         }
     }
 
@@ -603,28 +620,28 @@ public class Fragment1 extends Fragment {
             textView2.setClickable(false);
             textView3.setClickable(false);
             textView4.setClickable(false);
-            textView1.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
-            textView2.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
-            textView3.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
-            textView4.setTextColor(ContextCompat.getColor(getActivity(), android.R.color.darker_gray));
+            textView1.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
+            textView2.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
+            textView3.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
+            textView4.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
             if (type == 0) {
                 textView1.setClickable(true);
                 textView2.setClickable(true);
                 textView3.setClickable(true);
                 textView4.setClickable(true);
-                textView1.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
-                textView2.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
-                textView3.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
-                textView4.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView1.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView2.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView3.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView4.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
             } else if (type == 1) {
                 textView1.setClickable(true);
-                textView1.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView1.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
             } else if (type == 2) {
                 textView2.setClickable(true);
-                textView2.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView2.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
             } else if (type == 3) {
                 textView3.setClickable(true);
-                textView3.setTextColor(getResources().getColorStateList(R.drawable.window_btn_selector));
+                textView3.setTextColor(context.getResources().getColorStateList(R.drawable.window_btn_selector));
             }
         }
     }
@@ -635,11 +652,11 @@ public class Fragment1 extends Fragment {
             comeBack();
             ((MainActivity) Objects.requireNonNull(getActivity())).setPage(0);
             // 防止创建多个
-            if (alertDialog != null) {
+            if (alertDialog != null && alertDialog.isShowing()) {
                 alertDialog.dismiss();
             }
             // 创建对话框
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
             builder.setTitle("提示");
             builder.setMessage("请至少开启昵称前缀或选择一个编号模式");
             builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -671,16 +688,16 @@ public class Fragment1 extends Fragment {
             lastNumTotal = 0;
             // 跳转到微信(切换下界面跳转)
             try {
-                Intent intent = new Intent(Objects.requireNonNull(getActivity()), Main3Activity.class);
-                startActivity(intent);
+                Intent intent = new Intent(context, Main3Activity.class);
+                context.startActivity(intent);
             } catch (Exception e) {
                 Intent intent = new Intent();
                 intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
                 intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
-                startActivity(intent);
+                context.startActivity(intent);
             }
         }
-        if (getActivity() != null) {
+        if (context != null) {
             // 在界面的时候弹出
             if (isResume) {
                 if (isShowGoOnChangeNameDialog()) {
@@ -696,11 +713,11 @@ public class Fragment1 extends Fragment {
     // 是否自动跳转对话框
     private void showAutoWeiXin() {
         // 防止创建多个
-        if (alertDialog != null) {
+        if (alertDialog != null && alertDialog.isShowing()) {
             alertDialog.dismiss();
         }
         // 创建对话框
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
         builder.setTitle("提示");
         builder.setMessage("备注功能已经开启，是否跳转到微信？");
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -731,11 +748,11 @@ public class Fragment1 extends Fragment {
             // 在界面的时候弹出
             if (isResume) {
                 // 防止创建多个
-                if (alertDialog != null) {
+                if (alertDialog != null && alertDialog.isShowing()) {
                     alertDialog.dismiss();
                 }
                 // 创建对话框
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
                 builder.setTitle("提示");
                 builder.setMessage("检测到上次修改到“" + lastName + "”用户，编号模式是" + getResources().getStringArray(R.array.num2)[lastNumType] + ",是否继续编号修改？");
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
@@ -764,29 +781,29 @@ public class Fragment1 extends Fragment {
         }
     }
 
-    // 结束改名
-    public void showStopDialog() {
+    // 结束所有功能
+    public void stopService() {
+        setWindowCanClick(0);
         if (textView1 != null) {
             textView1.setText("开始\n备注");
         }
-        isShowWindow = false;
-        // tv_btn.setText("开始备注");
+        isShowWindowPermission = false;
         tv_btn.setText("开始");
         AutoWeixinService.isChangeNameStart = false;
         AutoWeixinService.selectNum = 0;
     }
 
-    // 回到当前应用
+    // 返回到当前应用
     public void comeBack() {
-        if (getActivity() != null) {
+        if (context != null) {
             try {
-                Intent intent = new Intent(Objects.requireNonNull(getActivity()), Main2Activity.class);
-                startActivity(intent);
+                Intent intent = new Intent(context, Main2Activity.class);
+                context.startActivity(intent);
             } catch (Exception e) {
                 Intent intent = new Intent();
                 intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
                 intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main2Activity");
-                startActivity(intent);
+                context.startActivity(intent);
             }
             if (!isResume) {
                 CustomTimeToast(true);
@@ -796,7 +813,7 @@ public class Fragment1 extends Fragment {
 
     public void CustomTimeToast(final boolean flag) {
         if (flag) {
-            mToast = Toast.makeText(getActivity(), "正在返回应用中，请稍等...", Toast.LENGTH_LONG);
+            mToast = Toast.makeText(context, "正在返回应用中，请稍等...", Toast.LENGTH_LONG);
             final Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override

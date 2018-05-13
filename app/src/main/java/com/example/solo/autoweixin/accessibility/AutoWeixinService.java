@@ -105,8 +105,10 @@ public class AutoWeixinService extends AccessibilityService {
                         isAfterStarFriendName = false;
                         afterStarFriendNameKey = "";
                         nameAfterList.clear();
-                        for (int i = 0; i < Fragment1.lastNumTotal; i++) {
-                            nameAfterList.add(" ");
+                        if (Fragment1.fragment1 != null) {
+                            for (int i = 0; i < Fragment1.lastNumTotal; i++) {
+                                nameAfterList.add(" ");
+                            }
                         }
                         nameBeforeList.clear();
                         changeName = "";
@@ -275,9 +277,11 @@ public class AutoWeixinService extends AccessibilityService {
                             // 添加记录
                             nameAfterList.add(string);
                             // 记录上次改名的最后一个人名字以及编号模式
-                            Fragment1.lastName = string;
-                            Fragment1.lastNumType = StringUtils.numType;
-                            Fragment1.lastNumTotal = nameAfterList.size();
+                            if (Fragment1.fragment1 != null) {
+                                Fragment1.lastName = string;
+                                Fragment1.lastNumType = StringUtils.numType;
+                                Fragment1.lastNumTotal = nameAfterList.size();
+                            }
 
                             index++;
                             // 修改完成并返回
@@ -414,10 +418,14 @@ public class AutoWeixinService extends AccessibilityService {
                     changeName = "";
                     index = 0;
                     Toast.makeText(AutoWeixinService.this, errString + "修改备注已经停止了！", Toast.LENGTH_SHORT).show();
-                    Fragment1.fragment1.initCreatFloatWindow();
+                    if (Fragment1.fragment1 != null) {
+                        Fragment1.fragment1.initCreatFloatWindow();
+                    }
                     if (!errString.equals("")) {
                         errString = "";
-                        Fragment1.fragment1.comeBack();
+                        if (Fragment1.fragment1 != null) {
+                            Fragment1.fragment1.comeBack();
+                        }
                     }
                 }
             } else {
@@ -431,7 +439,9 @@ public class AutoWeixinService extends AccessibilityService {
                 changeName = "";
                 index = 0;
                 Toast.makeText(AutoWeixinService.this, "修改备注已经停止了！", Toast.LENGTH_SHORT).show();
-                Fragment1.fragment1.initCreatFloatWindow();
+                if (Fragment1.fragment1 != null) {
+                    Fragment1.fragment1.initCreatFloatWindow();
+                }
             }
         }
 
@@ -504,7 +514,9 @@ public class AutoWeixinService extends AccessibilityService {
                 selectNum = 0;
                 nameAfterList.clear();
                 Toast.makeText(AutoWeixinService.this, "选择联系人已经停止了！", Toast.LENGTH_SHORT).show();
-                Fragment1.fragment1.initCreatFloatWindow();
+                if (Fragment1.fragment1 != null) {
+                    Fragment1.fragment1.initCreatFloatWindow();
+                }
             }
         }
 
