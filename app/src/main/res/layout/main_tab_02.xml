@@ -211,6 +211,7 @@
                     android:background="#22222222" />
 
                 <LinearLayout
+                    android:id="@+id/ll_version"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:gravity="center_vertical"

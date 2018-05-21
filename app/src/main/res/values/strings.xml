@@ -18,4 +18,12 @@
         <item>群发编号模式</item>
     </string-array>
 
+    <string-array name="num3">
+        <item>体验会员</item>
+        <item>月度会员</item>
+        <item>季度会员</item>
+        <item>半年度会员</item>
+        <item>年度会员</item>
+    </string-array>
+
 </resources>

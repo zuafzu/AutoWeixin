@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.solo.autoweixin.R;
+import com.example.solo.autoweixin.activity.SettingLoginActivity;
 import com.example.solo.autoweixin.utils.UrlUtils;
 import com.example.solo.autoweixin.utils.Utils;
 
@@ -35,6 +37,7 @@ public class Fragment2 extends Fragment {
     private TextView tv_state2;
     private TextView tv_deviceId;
     private Button btn_alive;
+    private LinearLayout ll_version;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,13 +54,13 @@ public class Fragment2 extends Fragment {
             @Override
             public void onClick(View view) {
                 String code = editText.getText().toString();
-                if(!"".equals(code)){
+                if (!"".equals(code)) {
                     // 调用接口
 
                     // tv_state1.setText("未注册，请激活");
                     // tv_state2.setText("还没有激活？立即加客服要激活码\n微信:knn-1711\nQQ:1653013330");
-                }else {
-                    Toast.makeText(getActivity(),"激活码不能为空",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "激活码不能为空", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -94,9 +97,9 @@ public class Fragment2 extends Fragment {
         ll_fankui.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try{
+                try {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(UrlUtils.urlQQ)));
-                }catch (Exception e){
+                } catch (Exception e) {
                     Toast.makeText(getActivity(), "请安装手机QQ", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -122,6 +125,24 @@ public class Fragment2 extends Fragment {
                     startActivity(intent);
                 } catch (Exception e) {
                     e.printStackTrace();
+                }
+            }
+        });
+        ll_version = view.findViewById(R.id.ll_version);
+        ll_version.setOnClickListener(new View.OnClickListener() {
+
+            //需要监听几次点击事件数组的长度就为几
+            //如果要监听双击事件则数组长度为2，如果要监听3次连续点击事件则数组长度为3...
+            long[] mHints = new long[3];//初始全部为0
+
+            @Override
+            public void onClick(View v) {
+                //将mHints数组内的所有元素左移一个位置
+                System.arraycopy(mHints, 1, mHints, 0, mHints.length - 1);
+                //获得当前系统已经启动的时间
+                mHints[mHints.length - 1] = SystemClock.uptimeMillis();
+                if (SystemClock.uptimeMillis() - mHints[0] <= 500) {
+                    startActivity(new Intent(getActivity(), SettingLoginActivity.class));
                 }
             }
         });
