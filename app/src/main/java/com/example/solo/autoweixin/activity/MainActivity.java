@@ -1,22 +1,38 @@
 package com.example.solo.autoweixin.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.example.solo.autoweixin.R;
+import com.example.solo.autoweixin.base.BaseActivity;
+import com.example.solo.autoweixin.bean.BaseBean;
+import com.example.solo.autoweixin.bean.CodeBean;
 import com.example.solo.autoweixin.fragment.Fragment1;
 import com.example.solo.autoweixin.fragment.Fragment2;
+import com.example.solo.autoweixin.url.Urls;
+import com.google.gson.Gson;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.Callback;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class MainActivity extends BaseActivity {
 
     private AlertDialog alertDialog;
     private ViewPager viewPager;
@@ -77,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putBoolean("isFirst", false);
                     editor.apply();
+                    netCanProbation();
                     alertDialog.dismiss();
                 }
             });
@@ -149,4 +166,120 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setCancelable(false);
         alertDialog.show();
     }
+
+    private void netCanProbation() {
+        OkHttpUtils.post()
+                .url(Urls.canProbation)
+                .build()
+                .execute(new Callback<BaseBean>() {
+
+                    @Override
+                    public void onBefore(Request request, int id) {
+                        super.onBefore(request, id);
+                        showProgressDialog();
+                    }
+
+                    @Override
+                    public BaseBean parseNetworkResponse(Response response, int id) throws Exception {
+                        String string = response.body().string();
+                        return new Gson().fromJson(string, BaseBean.class);
+                    }
+
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Log.e("cyf", e.getMessage());
+                        Toast.makeText(MainActivity.this, "访问异常！", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onResponse(BaseBean response, int id) {
+                        if ("0".equals(response.getCode())) {
+                            // 防止创建多个
+                            if (alertDialog != null && alertDialog.isShowing()) {
+                                alertDialog.dismiss();
+                            }
+                            // 创建对话框
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("提示");
+                            builder.setMessage("是否使用体验会员？");
+                            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    alertDialog.dismiss();
+                                    netUseProbation();
+                                }
+                            });
+                            builder.setNegativeButton("残忍拒绝", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    alertDialog.dismiss();
+                                }
+                            });
+                            alertDialog = builder.create();
+                            alertDialog.setCancelable(false);
+                            alertDialog.show();
+                        }
+                    }
+
+                    @Override
+                    public void onAfter(int id) {
+                        super.onAfter(id);
+                        dissmissProgressDialog();
+                    }
+                });
+    }
+
+    @SuppressLint("HardwareIds")
+    private void netUseProbation() {
+        OkHttpUtils.post()
+                .url(Urls.useProbation)
+                .addParams("deviceId", Settings.Secure.getString(Objects.requireNonNull(this).getContentResolver(), Settings.Secure.ANDROID_ID))
+                .build()
+                .execute(new Callback<BaseBean>() {
+
+                    @Override
+                    public void onBefore(Request request, int id) {
+                        super.onBefore(request, id);
+                        showProgressDialog();
+                    }
+
+                    @Override
+                    public BaseBean parseNetworkResponse(Response response, int id) throws Exception {
+                        String string = response.body().string();
+                        return new Gson().fromJson(string, BaseBean.class);
+                    }
+
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Log.e("cyf", e.getMessage());
+                        Toast.makeText(MainActivity.this, "访问异常！", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onResponse(BaseBean response, int id) {
+                        if ("0".equals(response.getCode())) {
+                            CodeBean codeBean = new Gson().fromJson(response.getData().toString(), CodeBean.class);
+                            // 共享参数存会员信息
+                            SharedPreferences preferences = getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("mKey", codeBean.getmKey());
+                            editor.putInt("vipType", codeBean.getVipType());
+                            editor.putLong("activatedDate", codeBean.getActivatedDate());
+                            editor.putLong("endDate", codeBean.getEndDate());
+                            editor.putLong("totalTime", codeBean.getTotalTime());
+                            editor.putLong("totalNum", codeBean.getTotalNum());
+                            editor.apply();
+                            ((Fragment2)fragment2).setState();
+                        }
+                        Toast.makeText(MainActivity.this, response.getMsg(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onAfter(int id) {
+                        super.onAfter(id);
+                        dissmissProgressDialog();
+                    }
+                });
+    }
+
 }

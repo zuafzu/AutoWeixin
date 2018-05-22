@@ -3,10 +3,8 @@ package com.example.solo.autoweixin.activity;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSpinner;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -19,7 +17,6 @@ import com.example.solo.autoweixin.base.BaseActivity;
 import com.example.solo.autoweixin.bean.BaseBean;
 import com.example.solo.autoweixin.bean.CodeBean;
 import com.example.solo.autoweixin.url.Urls;
-import com.example.solo.autoweixin.utils.StringUtils;
 import com.google.gson.Gson;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.Callback;
@@ -32,6 +29,7 @@ import okhttp3.Response;
 
 public class SettingAddActivity extends BaseActivity {
 
+    private TextView tv_title;
     private TextView tv_list;
     private EditText editText;
     private AppCompatSpinner appCompatSpinner;
@@ -51,6 +49,13 @@ public class SettingAddActivity extends BaseActivity {
     }
 
     private void initView() {
+        tv_title = findViewById(R.id.tv_title);
+        tv_title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
         tv_list = findViewById(R.id.tv_list);
         editText = findViewById(R.id.editText);
         appCompatSpinner = findViewById(R.id.appCompatSpinner);
@@ -89,11 +94,12 @@ public class SettingAddActivity extends BaseActivity {
                         totalNum = 182000L;
                         break;
                     case 3:
-                        totalTime = 365 * 24 * 60 * 60 * 1000L;
-                        totalNum = 9999999L;
+                        totalTime = 183 * 24 * 60 * 60 * 1000L;
+                        totalNum = 1464000L;
                         break;
                     case 4:
-
+                        totalTime = 365 * 24 * 60 * 60 * 1000L;
+                        totalNum = 19999999L;
                         break;
                 }
                 vipType = position;

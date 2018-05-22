@@ -31,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.bumptech.glide.load.engine.Resource;
 import com.example.solo.autoweixin.R;
 import com.example.solo.autoweixin.accessibility.AutoWeixinService;
 import com.example.solo.autoweixin.activity.Main2Activity;
@@ -230,6 +229,7 @@ public class Fragment1 extends Fragment {
                 }, 3000);
             }
         });
+        swipeRefreshLayout.setEnabled(false);
         slideShowView = view.findViewById(R.id.slideShowView);
         slideShowView.setTimeInterval(5);
         String imgs[] = new String[1];

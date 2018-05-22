@@ -1,9 +1,10 @@
 package com.example.solo.autoweixin.accessibility;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
@@ -245,8 +246,15 @@ public class AutoWeixinService extends AccessibilityService {
                         }
                         // 好友列表没有
                         if (!hasSame) {
-                            changeName = nameBeforeList.get(index);
+                            // 判断会员次数是否还有
+                            SharedPreferences preferences = getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+                            long a = preferences.getLong("totalNum", 0);
+                            if (a <= 0) {
+                                errString = "会员次数已经全部用光，";
+                                return false;
+                            }
                             // 开始改名
+                            changeName = nameBeforeList.get(index);
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, changeName);
                             if (sleepChangeName()) {
                                 return true;
@@ -284,6 +292,12 @@ public class AutoWeixinService extends AccessibilityService {
                             }
 
                             index++;
+                            // 判断会员次数减1
+                            a--;
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putLong("totalNum", a);
+                            editor.apply();
+
                             // 修改完成并返回
                             if (sleepChangeName()) {
                                 return true;
