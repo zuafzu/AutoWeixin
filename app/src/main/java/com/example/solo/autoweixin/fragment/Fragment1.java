@@ -393,7 +393,7 @@ public class Fragment1 extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 if (toggleButton4.isChecked()) {
-                    StringUtils.keyName = s.toString();
+                    StringUtils.keyName = "[," + s.toString();
                 } else {
                     StringUtils.keyName = "";
                 }
@@ -437,7 +437,7 @@ public class Fragment1 extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    StringUtils.keyName = editText3.getText().toString();
+                    StringUtils.keyName = "[," + editText3.getText().toString();
                 } else {
                     StringUtils.keyName = "";
                 }

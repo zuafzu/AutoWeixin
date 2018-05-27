@@ -17,9 +17,9 @@ public class StringUtils {
         if (hasPreName) {
             if ("".equals(preName)) {
                 @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("M.d");
-                string = sdf.format(new java.util.Date());
+                string = "[" + sdf.format(new java.util.Date()) + "]";
             } else {
-                string = preName;
+                string = "[" + preName + "]";
             }
         }
         if (numType == 0) {
