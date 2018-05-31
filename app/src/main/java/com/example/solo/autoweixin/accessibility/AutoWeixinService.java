@@ -24,15 +24,14 @@ public class AutoWeixinService extends AccessibilityService {
     public static final String LauncherUI = "com.tencent.mm.ui.LauncherUI";
     public static final String MM = "com.tencent.mm";
 
-    public static String wx_zhujiemian = "com.tencent.mm.ui.LauncherUI";//主界面
-    public static String wx_yonghuxiangqing = "com.tencent.mm.plugin.profile.ui.ContactInfoUI";// 好友详情页面
-    public static String wx_yonghuming = "com.tencent.mm:id/cbx";//用户名id("com.tencent.mm:id/cdm"6.6.5)
-    public static String wx_haoyouliebiao = "com.tencent.mm:id/j8";//好友列表id（"com.tencent.mm:id/iq"6.6.5）
-    public static String wx_gengduo = "com.tencent.mm:id/hi";//右上角更多按钮id（"com.tencent.mm:id/he"6.6.5）
-    public static String wx_xiugaibeizhu = "com.tencent.mm:id/i8";//修改备注按钮id（"com.tencent.mm:id/i3"6.6.5）
-    public static String wx_name1 = "com.tencent.mm:id/ap2";//用户名文本id（"com.tencent.mm:id/ap5"6.6.5）
-    public static String wx_name2 = "com.tencent.mm:id/ap2";//用户名输入框id（"com.tencent.mm:id/ap4"6.6.5）
+    public static String wx_yonghuming = "com.tencent.mm:id/cbx";//用户名id
+    public static String wx_haoyouliebiao = "com.tencent.mm:id/j8";//好友列表id
+    public static String wx_gengduo = "com.tencent.mm:id/hi";//右上角更多按钮id
+    public static String wx_xiugaibeizhu = "com.tencent.mm:id/i8";//修改备注按钮id
+    public static String wx_name1 = "com.tencent.mm:id/ap2";//用户名文本id
+    public static String wx_name2 = "com.tencent.mm:id/ap2";//用户名输入框id
 
+    public static String wx_yonghuxiangqing = "com.tencent.mm.plugin.profile.ui.ContactInfoUI";// 好友详情页面
     public static String wx_40 = "com.tencent.mm.ui.contact.SelectContactUI";// 40人界面
     public static String wx_200 = "com.tencent.mm.plugin.masssend.ui.MassSendSelectContactUI";// 200人界面
 
@@ -74,6 +73,13 @@ public class AutoWeixinService extends AccessibilityService {
             wx_xiugaibeizhu = "com.tencent.mm:id/i8";
             wx_name1 = "com.tencent.mm:id/ap2";
             wx_name2 = "com.tencent.mm:id/ap2";
+        } else if ("6.6.7".equals(wechatVersion)) {
+            wx_yonghuming = "com.tencent.mm:id/y3";
+            wx_haoyouliebiao = "com.tencent.mm:id/jq";
+            wx_gengduo = "com.tencent.mm:id/hh";
+            wx_xiugaibeizhu = "com.tencent.mm:id/ge";
+            wx_name1 = "com.tencent.mm:id/arc";
+            wx_name2 = "com.tencent.mm:id/arc";
         }
         autoWeixinService = this;
         // 初始化
@@ -94,7 +100,7 @@ public class AutoWeixinService extends AccessibilityService {
             //获取当前activity的类名:
             currentWindowActivity = accessibilityEvent.getClassName().toString();
             // Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
-            if (wx_zhujiemian.equals(currentWindowActivity)) {// 批量改备注
+            if (LauncherUI.equals(currentWindowActivity)) {// 批量改备注
                 if (isChangeNameStart) {
                     AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
                     if (accessibilityNodeInfo == null) {

@@ -2,7 +2,7 @@ package com.example.solo.autoweixin.url;
 
 public class Urls {
 
-    public static final String url = "http://192.168.0.8:8080/";
+    public static final String url = "http://47.98.192.12:8080/";
 
     public static final String login = url + "login";
     public static final String addCode = url + "addCode";
