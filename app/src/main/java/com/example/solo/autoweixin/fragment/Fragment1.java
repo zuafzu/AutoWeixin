@@ -65,7 +65,7 @@ public class Fragment1 extends Fragment {
     private TextView tv_btn;
     private AppCompatSpinner appCompatSpinner;
     private EditText editText, editText2, editText3;
-    private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6;
+    private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6,toggleButton7;
 
     private boolean isResume = false;
     private boolean isShowWindowPermission = true;
@@ -312,6 +312,7 @@ public class Fragment1 extends Fragment {
         toggleButton4 = view.findViewById(R.id.toggleButton4);
         toggleButton5 = view.findViewById(R.id.toggleButton5);
         toggleButton6 = view.findViewById(R.id.toggleButton6);
+        toggleButton7 = view.findViewById(R.id.toggleButton7);
         appCompatSpinner = view.findViewById(R.id.appCompatSpinner);
 
         appCompatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -441,6 +442,12 @@ public class Fragment1 extends Fragment {
                 } else {
                     StringUtils.keyName = "";
                 }
+            }
+        });
+        toggleButton7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                StringUtils.isChange = isChecked;
             }
         });
         toggleButton5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

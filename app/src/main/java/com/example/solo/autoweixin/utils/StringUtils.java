@@ -11,6 +11,7 @@ public class StringUtils {
     public static int numType = 0;// 编号模式
     public static int index = 0;// 位置
     public static String keyName = "";// 关键字
+    public static boolean isChange = false;// 是否替换备注名
 
     public static String getName(String name, int mIndex) {
         String string = "";
@@ -25,16 +26,34 @@ public class StringUtils {
         if (numType == 0) {
             string = string + "";
         } else if (numType == 1) {
-            string = string + "-" + (mIndex + 1);
+            if (string.equals("")) {
+                string = string + "" + (mIndex + 1);
+            } else {
+                string = string + "-" + (mIndex + 1);
+            }
         } else if (numType == 2) {
-            string = string + "-" + "邀" + (mIndex / 40 + 1) + "-" + (mIndex % 40 + 1);
+            if (string.equals("")) {
+                string = string + "" + "邀" + (mIndex / 40 + 1) + "-" + (mIndex % 40 + 1);
+            } else {
+                string = string + "-" + "邀" + (mIndex / 40 + 1) + "-" + (mIndex % 40 + 1);
+            }
         } else if (numType == 3) {
-            string = string + "-" + "发" + (mIndex / 200 + 1) + "-" + (mIndex % 200 + 1);
+            if (string.equals("")) {
+                string = string + "" + "发" + (mIndex / 200 + 1) + "-" + (mIndex % 200 + 1);
+            } else {
+                string = string + "-" + "发" + (mIndex / 200 + 1) + "-" + (mIndex % 200 + 1);
+            }
         }
-        if (name.length() > index) {
-            string = name.substring(0, index) + string + name.substring(index, name.length());
+        if (isChange) {
+            if (numType == 0) {
+                string = string + "-" + "改名宝";
+            }
         } else {
-            string = name + string;
+            if (name.length() > index) {
+                string = name.substring(0, index) + string + name.substring(index, name.length());
+            } else {
+                string = name + string;
+            }
         }
         return string;
     }
