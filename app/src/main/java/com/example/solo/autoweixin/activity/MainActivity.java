@@ -201,7 +201,7 @@ public class MainActivity extends BaseActivity {
                             // 创建对话框
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                             builder.setTitle("提示");
-                            builder.setMessage("是否使用体验会员？");
+                            builder.setMessage("是否使用体验会员？\n拒绝后无法再使用体验会员。(群聊40人邀请 和 群发200人邀请 只能体验一次)");
                             builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {

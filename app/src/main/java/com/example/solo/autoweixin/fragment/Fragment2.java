@@ -32,7 +32,7 @@ import com.example.solo.autoweixin.base.BaseActivity;
 import com.example.solo.autoweixin.bean.BaseBean;
 import com.example.solo.autoweixin.bean.CodeBean;
 import com.example.solo.autoweixin.url.Urls;
-import com.example.solo.autoweixin.utils.UrlUtils;
+import com.example.solo.autoweixin.url.Urls2;
 import com.example.solo.autoweixin.utils.Utils;
 import com.google.gson.Gson;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -80,7 +80,7 @@ public class Fragment2 extends Fragment {
                     // 创建对话框
                     AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
                     builder.setTitle("提示");
-                    builder.setMessage("激活会覆盖之前的会员信息，请确定激活。\n激活设备不可卸载app或主动清除app数据，否则激活信息无法找回。");
+                    builder.setMessage("激活会覆盖之前的会员信息，既会员类型和到期时间将重新设定，改名次数会累加，请确定激活。\n激活设备不可卸载app或主动清除app数据，否则激活信息无法找回。");
                     builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -137,7 +137,7 @@ public class Fragment2 extends Fragment {
             @Override
             public void onClick(View view) {
                 try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(UrlUtils.urlQQ)));
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Urls2.urlQQ)));
                 } catch (Exception e) {
                     Toast.makeText(getActivity(), "请安装手机QQ", Toast.LENGTH_SHORT).show();
                 }
@@ -149,7 +149,7 @@ public class Fragment2 extends Fragment {
             public void onClick(View view) {
                 Intent intent = new Intent();
                 intent.setAction("android.intent.action.VIEW");
-                Uri content_url = Uri.parse(UrlUtils.urlJiaocheng2);
+                Uri content_url = Uri.parse(Urls2.urlJiaocheng2);
                 intent.setData(content_url);
                 startActivity(intent);
             }
@@ -226,7 +226,7 @@ public class Fragment2 extends Fragment {
                         Date d1 = new Date(preferences.getLong("endDate", 0));
                         String date = format.format(d1);
                         String num = "" + preferences.getLong("totalNum", 0);
-                        if (preferences.getLong("totalNum", 0) > 9999999) {
+                        if (preferences.getLong("totalNum", 0) > 8999999) {
                             num = "无限";
                         }
                         tv_state2.setText("会员类型：" + type + "\n到期日期：" + date + "\n剩余改名次数：" + num);
@@ -308,7 +308,8 @@ public class Fragment2 extends Fragment {
                             editor.putLong("activatedDate", codeBean.getActivatedDate());
                             editor.putLong("endDate", codeBean.getEndDate());
                             editor.putLong("totalTime", codeBean.getTotalTime());
-                            editor.putLong("totalNum", codeBean.getTotalNum());
+                            int a = preferences.getInt("totalNum", 0);
+                            editor.putLong("totalNum", codeBean.getTotalNum() + a);
                             editor.apply();
                             setState();
                         }

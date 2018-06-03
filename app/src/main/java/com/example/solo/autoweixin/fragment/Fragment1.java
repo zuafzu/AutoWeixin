@@ -37,8 +37,9 @@ import com.example.solo.autoweixin.activity.Main2Activity;
 import com.example.solo.autoweixin.activity.Main3Activity;
 import com.example.solo.autoweixin.activity.MainActivity;
 import com.example.solo.autoweixin.utils.StringUtils;
-import com.example.solo.autoweixin.utils.UrlUtils;
+import com.example.solo.autoweixin.url.Urls2;
 import com.example.solo.autoweixin.utils.Utils;
+import com.example.solo.autoweixin.utils.VipUtils;
 import com.example.solo.autoweixin.utils.WindowManagerUtils;
 import com.example.solo.autoweixin.view.SlideShowView;
 
@@ -65,7 +66,7 @@ public class Fragment1 extends Fragment {
     private TextView tv_btn;
     private AppCompatSpinner appCompatSpinner;
     private EditText editText, editText2, editText3;
-    private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6,toggleButton7;
+    private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6, toggleButton7;
 
     private boolean isResume = false;
     private boolean isShowWindowPermission = true;
@@ -232,8 +233,8 @@ public class Fragment1 extends Fragment {
         swipeRefreshLayout.setEnabled(false);
         slideShowView = view.findViewById(R.id.slideShowView);
         slideShowView.setTimeInterval(5);
-        String imgs[] = new String[1];
-        imgs[0] = UrlUtils.urlImg;
+        int imgs[] = new int[1];
+        imgs[0] = Urls2.urlImg;
         slideShowView.initUI(context, 2, imgs);
         tv_btn = view.findViewById(R.id.tv_btn);
         tv_btn.setOnClickListener(new View.OnClickListener() {
@@ -289,7 +290,7 @@ public class Fragment1 extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setAction("android.intent.action.VIEW");
-                Uri content_url = Uri.parse(UrlUtils.urlJiaocheng);
+                Uri content_url = Uri.parse(Urls2.urlJiaocheng);
                 intent.setData(content_url);
                 startActivity(intent);
             }
@@ -319,16 +320,20 @@ public class Fragment1 extends Fragment {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0 && !toggleButton1.isChecked()) {
-                    if (textView1 != null) {
-                        textView1.setVisibility(View.GONE);
-                    }
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 2)) {
+                    appCompatSpinner.setSelection(0, true);
                 } else {
-                    if (textView1 != null) {
-                        textView1.setVisibility(View.VISIBLE);
+                    if (position == 0 && !toggleButton1.isChecked()) {
+                        if (textView1 != null) {
+                            textView1.setVisibility(View.GONE);
+                        }
+                    } else {
+                        if (textView1 != null) {
+                            textView1.setVisibility(View.VISIBLE);
+                        }
                     }
+                    StringUtils.numType = position;
                 }
-                StringUtils.numType = position;
             }
 
             @Override
@@ -403,61 +408,81 @@ public class Fragment1 extends Fragment {
         toggleButton1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (StringUtils.numType == 0 && !isChecked) {
-                    if (textView1 != null) {
-                        textView1.setVisibility(View.GONE);
-                    }
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 1)) {
+                    buttonView.setChecked(false);
                 } else {
-                    if (textView1 != null) {
-                        textView1.setVisibility(View.VISIBLE);
+                    if (StringUtils.numType == 0 && !isChecked) {
+                        if (textView1 != null) {
+                            textView1.setVisibility(View.GONE);
+                        }
+                    } else {
+                        if (textView1 != null) {
+                            textView1.setVisibility(View.VISIBLE);
+                        }
                     }
-                }
-                StringUtils.hasPreName = isChecked;
-                if (isChecked) {
-                    StringUtils.preName = editText.getText().toString();
-                } else {
-                    StringUtils.preName = "";
+                    StringUtils.hasPreName = isChecked;
+                    if (isChecked) {
+                        StringUtils.preName = editText.getText().toString();
+                    } else {
+                        StringUtils.preName = "";
+                    }
                 }
             }
         });
         toggleButton3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    if ("".equals(editText2.getText().toString())) {
-                        StringUtils.index = 0;
-                    } else {
-                        StringUtils.index = Integer.valueOf(editText2.getText().toString());
-                    }
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 3)) {
+                    buttonView.setChecked(false);
                 } else {
-                    StringUtils.index = 0;
+                    if (isChecked) {
+                        if ("".equals(editText2.getText().toString())) {
+                            StringUtils.index = 0;
+                        } else {
+                            StringUtils.index = Integer.valueOf(editText2.getText().toString());
+                        }
+                    } else {
+                        StringUtils.index = 0;
+                    }
                 }
             }
         });
         toggleButton4.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    StringUtils.keyName = "[," + editText3.getText().toString();
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 4)) {
+                    buttonView.setChecked(false);
                 } else {
-                    StringUtils.keyName = "";
+                    if (isChecked) {
+                        StringUtils.keyName = "[," + editText3.getText().toString();
+                    } else {
+                        StringUtils.keyName = "";
+                    }
                 }
             }
         });
         toggleButton7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                StringUtils.isChange = isChecked;
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 5)) {
+                    buttonView.setChecked(false);
+                } else {
+                    StringUtils.isChange = isChecked;
+                }
             }
         });
         toggleButton5.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (textView2 != null) {
-                    if (isChecked) {
-                        textView2.setVisibility(View.VISIBLE);
-                    } else {
-                        textView2.setVisibility(View.GONE);
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 6)) {
+                    buttonView.setChecked(false);
+                } else {
+                    if (textView2 != null) {
+                        if (isChecked) {
+                            textView2.setVisibility(View.VISIBLE);
+                        } else {
+                            textView2.setVisibility(View.GONE);
+                        }
                     }
                 }
             }
@@ -465,11 +490,15 @@ public class Fragment1 extends Fragment {
         toggleButton6.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (textView3 != null) {
-                    if (isChecked) {
-                        textView3.setVisibility(View.VISIBLE);
-                    } else {
-                        textView3.setVisibility(View.GONE);
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 7)) {
+                    buttonView.setChecked(false);
+                } else {
+                    if (textView3 != null) {
+                        if (isChecked) {
+                            textView3.setVisibility(View.VISIBLE);
+                        } else {
+                            textView3.setVisibility(View.GONE);
+                        }
                     }
                 }
             }
@@ -552,19 +581,24 @@ public class Fragment1 extends Fragment {
                                 stopService();
                                 textView2.setText("群邀请\n勾选");
                             } else {
-                                stopService();
-                                setWindowCanClick(2);
-                                AutoWeixinService.selectNum = 40;
-                                textView2.setText("群邀请\n关闭");
-                                textView3.setText("群发\n勾选");
-                                try {
-                                    Intent intent = new Intent(context, Main3Activity.class);
-                                    context.startActivity(intent);
-                                } catch (Exception e) {
-                                    Intent intent = new Intent();
-                                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                                    intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
-                                    context.startActivity(intent);
+                                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 6)) {
+                                    textView2.setVisibility(View.GONE);
+                                    toggleButton5.setChecked(false);
+                                } else {
+                                    stopService();
+                                    setWindowCanClick(2);
+                                    AutoWeixinService.selectNum = 40;
+                                    textView2.setText("群邀请\n关闭");
+                                    textView3.setText("群发\n勾选");
+                                    try {
+                                        Intent intent = new Intent(context, Main3Activity.class);
+                                        context.startActivity(intent);
+                                    } catch (Exception e) {
+                                        Intent intent = new Intent();
+                                        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                                        intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
+                                        context.startActivity(intent);
+                                    }
                                 }
                             }
                         }
@@ -584,19 +618,24 @@ public class Fragment1 extends Fragment {
                                 stopService();
                                 textView3.setText("群发\n勾选");
                             } else {
-                                stopService();
-                                setWindowCanClick(3);
-                                AutoWeixinService.selectNum = 200;
-                                textView3.setText("群发\n关闭");
-                                textView2.setText("群邀请\n勾选");
-                                try {
-                                    Intent intent = new Intent(context, Main3Activity.class);
-                                    context.startActivity(intent);
-                                } catch (Exception e) {
-                                    Intent intent = new Intent();
-                                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                                    intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
-                                    context.startActivity(intent);
+                                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 7)) {
+                                    textView3.setVisibility(View.GONE);
+                                    toggleButton6.setChecked(false);
+                                } else {
+                                    stopService();
+                                    setWindowCanClick(3);
+                                    AutoWeixinService.selectNum = 200;
+                                    textView3.setText("群发\n关闭");
+                                    textView2.setText("群邀请\n勾选");
+                                    try {
+                                        Intent intent = new Intent(context, Main3Activity.class);
+                                        context.startActivity(intent);
+                                    } catch (Exception e) {
+                                        Intent intent = new Intent();
+                                        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                                        intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.Main3Activity");
+                                        context.startActivity(intent);
+                                    }
                                 }
                             }
                         }

@@ -83,23 +83,23 @@ public class SettingAddActivity extends BaseActivity {
                 switch (position) {
                     case 0:
                         totalTime = 3 * 24 * 60 * 60 * 1000L;
-                        totalNum = 50L;
+                        totalNum = 200L;
                         break;
                     case 1:
                         totalTime = 30 * 24 * 60 * 60 * 1000L;
-                        totalNum = 15000L;
+                        totalNum = 5000L;
                         break;
                     case 2:
                         totalTime = 91 * 24 * 60 * 60 * 1000L;
-                        totalNum = 182000L;
+                        totalNum = 8000L;
                         break;
                     case 3:
                         totalTime = 183 * 24 * 60 * 60 * 1000L;
-                        totalNum = 1464000L;
+                        totalNum = 12000L;
                         break;
                     case 4:
                         totalTime = 365 * 24 * 60 * 60 * 1000L;
-                        totalNum = 19999999L;
+                        totalNum = 9999999L;
                         break;
                 }
                 vipType = position;
