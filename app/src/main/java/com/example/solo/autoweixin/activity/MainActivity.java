@@ -264,12 +264,14 @@ public class MainActivity extends BaseActivity {
                             SharedPreferences.Editor editor = preferences.edit();
                             editor.putString("mKey", codeBean.getmKey());
                             editor.putInt("vipType", codeBean.getVipType());
-                            editor.putLong("activatedDate", codeBean.getActivatedDate());
+                            if (codeBean.getActivatedDate() != null) {
+                                editor.putLong("activatedDate", codeBean.getActivatedDate());
+                            }
                             editor.putLong("endDate", codeBean.getEndDate());
                             editor.putLong("totalTime", codeBean.getTotalTime());
                             editor.putLong("totalNum", codeBean.getTotalNum());
                             editor.apply();
-                            ((Fragment2)fragment2).setState();
+                            ((Fragment2) fragment2).setState();
                         }
                         Toast.makeText(MainActivity.this, response.getMsg(), Toast.LENGTH_SHORT).show();
                     }
