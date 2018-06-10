@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Binder;
+import android.os.Build;
+import android.provider.Settings;
+import android.util.Log;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -48,6 +51,21 @@ public class Utils {
             }
         }
         return "";
+    }
+
+    //判断权限
+    public static boolean commonROMPermissionCheck(Context context) {
+        Boolean result = true;
+        if (Build.VERSION.SDK_INT >= 23) {
+            try {
+                Class clazz = Settings.class;
+                Method canDrawOverlays = clazz.getDeclaredMethod("canDrawOverlays", Context.class);
+                result = (Boolean) canDrawOverlays.invoke(null, context);
+            } catch (Exception e) {
+                Log.e("cyf", Log.getStackTraceString(e));
+            }
+        }
+        return result;
     }
 
     /**

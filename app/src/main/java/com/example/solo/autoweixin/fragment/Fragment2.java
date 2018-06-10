@@ -163,6 +163,7 @@ public class Fragment2 extends Fragment {
                     Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
                     startActivity(intent);
                 } catch (Exception e) {
+                    Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             }
@@ -305,7 +306,9 @@ public class Fragment2 extends Fragment {
                             SharedPreferences.Editor editor = preferences.edit();
                             editor.putString("mKey", codeBean.getmKey());
                             editor.putInt("vipType", codeBean.getVipType());
-                            editor.putLong("activatedDate", codeBean.getActivatedDate());
+                            if (codeBean.getActivatedDate() != null) {
+                                editor.putLong("activatedDate", codeBean.getActivatedDate());
+                            }
                             editor.putLong("endDate", codeBean.getEndDate());
                             editor.putLong("totalTime", codeBean.getTotalTime());
                             int a = preferences.getInt("totalNum", 0);

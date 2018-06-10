@@ -98,7 +98,9 @@ public class AutoWeixinService extends AccessibilityService {
         //如果手机当前界面的窗口发送变化
         if (accessibilityEvent.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             //获取当前activity的类名:
-            currentWindowActivity = accessibilityEvent.getClassName().toString();
+            if (accessibilityEvent.getClassName() != null) {
+                currentWindowActivity = accessibilityEvent.getClassName().toString();
+            }
             // Log.e("cyf", "currentWindowActivity : " + currentWindowActivity);
             if (LauncherUI.equals(currentWindowActivity)) {// 批量改备注
                 if (isChangeNameStart) {

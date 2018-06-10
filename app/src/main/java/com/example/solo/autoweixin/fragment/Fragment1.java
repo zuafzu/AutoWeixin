@@ -36,8 +36,8 @@ import com.example.solo.autoweixin.accessibility.AutoWeixinService;
 import com.example.solo.autoweixin.activity.Main2Activity;
 import com.example.solo.autoweixin.activity.Main3Activity;
 import com.example.solo.autoweixin.activity.MainActivity;
-import com.example.solo.autoweixin.utils.StringUtils;
 import com.example.solo.autoweixin.url.Urls2;
+import com.example.solo.autoweixin.utils.StringUtils;
 import com.example.solo.autoweixin.utils.Utils;
 import com.example.solo.autoweixin.utils.VipUtils;
 import com.example.solo.autoweixin.utils.WindowManagerUtils;
@@ -76,6 +76,8 @@ public class Fragment1 extends Fragment {
     private Toast mToast;
     private View windowView;
     private Button textView1, textView2, textView3, textView4;
+
+    private boolean isSettingAlert = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -198,15 +200,15 @@ public class Fragment1 extends Fragment {
             @Override
             public void onAccessibilityStateChanged(boolean b) {
                 if (b) {
-                    try {
-                        Intent intent = new Intent(context, MainActivity.class);
-                        context.startActivity(intent);
-                    } catch (Exception e) {
-                        Intent intent = new Intent();
-                        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                        intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.MainActivity");
-                        context.startActivity(intent);
-                    }
+//                    try {
+//                        Intent intent = new Intent(context, MainActivity.class);
+//                        context.startActivity(intent);
+//                    } catch (Exception e) {
+//                        Intent intent = new Intent();
+//                        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+//                        intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.MainActivity");
+//                        context.startActivity(intent);
+//                    }
                     // 开启悬浮窗
                     creatFloatWindow();
                 } else {
@@ -278,6 +280,7 @@ public class Fragment1 extends Fragment {
                         Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
                         startActivity(intent);
                     } catch (Exception e) {
+                        Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
                 }
@@ -510,42 +513,60 @@ public class Fragment1 extends Fragment {
     private void creatFloatWindow() {
         if (windowView == null) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                if (!Utils.getAppOps(context)) {
-                    // 防止创建多个
-                    if (alertDialog != null && alertDialog.isShowing()) {
-                        alertDialog.dismiss();
-                    }
-                    // 创建对话框
-                    AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
-                    builder.setTitle("提示");
-                    builder.setMessage("需要悬浮窗权限，是否跳转到设置去开启？");
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.M)
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                if (!Utils.commonROMPermissionCheck(context)) {
+                    if(getActivity()!=null){
+                        if (isSettingAlert) {
+                            getActivity().finish();
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent = new Intent();
+                                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                                    intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.MainActivity");
+                                    context.startActivity(intent);
+                                }
+                            },500);
+                            return;
+                        }
+                        // 防止创建多个
+                        if (alertDialog != null && alertDialog.isShowing()) {
                             alertDialog.dismiss();
-                            //没有悬浮窗权限m,去开启悬浮窗权限
-                            try {
-                                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                                startActivity(intent);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        }
+                        // 创建对话框
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
+                        builder.setTitle("提示");
+                        builder.setMessage("需要悬浮窗权限，是否跳转到设置去开启？");
+                        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @RequiresApi(api = Build.VERSION_CODES.M)
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                alertDialog.dismiss();
+                                //没有悬浮窗权限m,去开启悬浮窗权限
+                                try {
+                                    isSettingAlert = true;
+                                    // Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getActivity().getPackageName()));
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
                             }
+                        });
+                        builder.setNegativeButton("不再提醒", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isShowWindowPermission = false;
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog = builder.create();
+                        alertDialog.setCancelable(false);
+                        if (isShowWindowPermission) {
+                            alertDialog.show();
                         }
-                    });
-                    builder.setNegativeButton("不再提醒", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            isShowWindowPermission = false;
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog = builder.create();
-                    alertDialog.setCancelable(false);
-                    if (isShowWindowPermission) {
-                        alertDialog.show();
+                        return;
                     }
-                    return;
                 }
             }
             if (getActivity() != null) {
@@ -884,3 +905,4 @@ public class Fragment1 extends Fragment {
     }
 
 }
+
