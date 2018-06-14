@@ -287,7 +287,11 @@ public class AutoWeixinService extends AccessibilityService {
                             String string = StringUtils.getName(changeName, nameAfterList.size());
                             Bundle arguments = new Bundle();
                             arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, string);
-                            if (!accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_name2).isEmpty()) {
+                            // 防止奔溃校验
+                            if (accessibilityNodeInfo == null) {
+                                accessibilityNodeInfo = getRootInActiveWindow();
+                            }
+                            if (accessibilityNodeInfo != null && !accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_name2).isEmpty()) {
                                 accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_name2).get(0).performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
                             }
                             // 添加记录

@@ -203,7 +203,7 @@ public class Fragment2 extends Fragment {
                 tv_state1.setText("未注册，请激活");
             }
             if (tv_state2 != null) {
-                tv_state2.setText("还没有激活？立即加客服要激活码\n微信:knn-1711\nQQ:1653013330");
+                tv_state2.setText("还没有激活？立即加客服要激活码\n微信:" + Urls2.mWeiChat + "\nQQ:" + Urls2.mQQ);
             }
         } else {
             if (preferences.getLong("endDate", 0) > System.currentTimeMillis()) {
@@ -293,7 +293,7 @@ public class Fragment2 extends Fragment {
 
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.e("cyf", e.getMessage());
+                        Log.e("cyf", "错误信息 ：" + e.getMessage());
                         Toast.makeText(getActivity(), "访问异常！", Toast.LENGTH_SHORT).show();
                     }
 
@@ -311,7 +311,7 @@ public class Fragment2 extends Fragment {
                             }
                             editor.putLong("endDate", codeBean.getEndDate());
                             editor.putLong("totalTime", codeBean.getTotalTime());
-                            int a = preferences.getInt("totalNum", 0);
+                            long a = preferences.getLong("totalNum", 0);
                             editor.putLong("totalNum", codeBean.getTotalNum() + a);
                             editor.apply();
                             setState();
