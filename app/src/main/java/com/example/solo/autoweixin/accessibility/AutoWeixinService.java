@@ -16,6 +16,7 @@ import com.example.solo.autoweixin.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.example.solo.autoweixin.utils.PerformClickUtils.performClick;
 
@@ -80,6 +81,13 @@ public class AutoWeixinService extends AccessibilityService {
             wx_xiugaibeizhu = "com.tencent.mm:id/ge";
             wx_name1 = "com.tencent.mm:id/arc";
             wx_name2 = "com.tencent.mm:id/arc";
+        } else if ("6.7.0".equals(wechatVersion)) {
+            wx_yonghuming = "com.tencent.mm:id/y4";
+            wx_haoyouliebiao = "com.tencent.mm:id/jr";
+            wx_gengduo = "com.tencent.mm:id/hi";
+            wx_xiugaibeizhu = "com.tencent.mm:id/gf";
+            wx_name1 = "com.tencent.mm:id/arj";
+            wx_name2 = "com.tencent.mm:id/arj";
         }
         autoWeixinService = this;
         // 初始化
@@ -167,6 +175,8 @@ public class AutoWeixinService extends AccessibilityService {
 
         @Override
         protected Boolean doInBackground(List<AccessibilityNodeInfo>... lists) {
+            SharedPreferences preferences = Objects.requireNonNull(getSharedPreferences("appInfo", Context.MODE_PRIVATE));
+
             AccessibilityNodeInfo accessibilityNodeInfo = getRootInActiveWindow();
             if (accessibilityNodeInfo == null) {
                 return true;
@@ -211,13 +221,13 @@ public class AutoWeixinService extends AccessibilityService {
                                             if (flag) {
                                                 if (!"微信团队".equals(name) && !"文件传输助手".equals(name)) {
                                                     // 检查是否包含关键字，包含不修改
-                                                    if (StringUtils.keyName.equals("")) {
+                                                    if (preferences.getString("keyName", "").equals("")) {
                                                         nameBeforeList.add(name);
                                                     } else {
-                                                        StringUtils.keyName = StringUtils.keyName.replace("，", ",");
-                                                        if (StringUtils.keyName.contains(",")) {
+                                                        // StringUtils.keyName = StringUtils.keyName.replace("，", ",");
+                                                        if (preferences.getString("keyName", "").contains(",")) {
                                                             boolean hasSame = false;
-                                                            String[] keyNames = StringUtils.keyName.split(",");
+                                                            String[] keyNames = preferences.getString("keyName", "").split(",");
                                                             for (int j = 0; j < keyNames.length; j++) {
                                                                 if (!keyNames[j].isEmpty() && name.contains(keyNames[j])) {
                                                                     hasSame = true;
@@ -228,7 +238,7 @@ public class AutoWeixinService extends AccessibilityService {
                                                                 nameBeforeList.add(name);
                                                             }
                                                         } else {
-                                                            if (!name.contains(StringUtils.keyName)) {
+                                                            if (!name.contains(preferences.getString("keyName", ""))) {
                                                                 nameBeforeList.add(name);
                                                             }
                                                         }
@@ -255,7 +265,6 @@ public class AutoWeixinService extends AccessibilityService {
                         // 好友列表没有
                         if (!hasSame) {
                             // 判断会员次数是否还有
-                            SharedPreferences preferences = getSharedPreferences("appInfo", Context.MODE_PRIVATE);
                             long a = preferences.getLong("totalNum", 0);
                             if (a <= 0) {
                                 errString = "会员次数已经全部用光，";
@@ -284,7 +293,7 @@ public class AutoWeixinService extends AccessibilityService {
                                 return true;
                             }
                             // 修改名字
-                            String string = StringUtils.getName(changeName, nameAfterList.size());
+                            String string = StringUtils.getName(AutoWeixinService.this, changeName, nameAfterList.size());
                             Bundle arguments = new Bundle();
                             arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, string);
                             // 防止奔溃校验
@@ -299,7 +308,7 @@ public class AutoWeixinService extends AccessibilityService {
                             // 记录上次改名的最后一个人名字以及编号模式
                             if (Fragment1.fragment1 != null) {
                                 Fragment1.lastName = string;
-                                Fragment1.lastNumType = StringUtils.numType;
+                                Fragment1.lastNumType = preferences.getInt("numType", 0);
                                 Fragment1.lastNumTotal = nameAfterList.size();
                             }
 
@@ -369,13 +378,13 @@ public class AutoWeixinService extends AccessibilityService {
                                             if (flag) {
                                                 if (!"微信团队".equals(name) && !"文件传输助手".equals(name)) {
                                                     // 检查是否包含关键字，包含不修改
-                                                    if (StringUtils.keyName.equals("")) {
+                                                    if (preferences.getString("keyName", "").equals("")) {
                                                         nameBeforeList.add(name);
                                                     } else {
-                                                        StringUtils.keyName = StringUtils.keyName.replace("，", ",");
-                                                        if (StringUtils.keyName.contains(",")) {
+                                                        // StringUtils.keyName = StringUtils.keyName.replace("，", ",");
+                                                        if (preferences.getString("keyName", "").contains(",")) {
                                                             boolean hasSame = false;
-                                                            String[] keyNames = StringUtils.keyName.split(",");
+                                                            String[] keyNames = preferences.getString("keyName", "").split(",");
                                                             for (int j = 0; j < keyNames.length; j++) {
                                                                 if (!keyNames[j].isEmpty() && name.contains(keyNames[j])) {
                                                                     hasSame = true;
@@ -386,7 +395,7 @@ public class AutoWeixinService extends AccessibilityService {
                                                                 nameBeforeList.add(name);
                                                             }
                                                         } else {
-                                                            if (!name.contains(StringUtils.keyName)) {
+                                                            if (!name.contains(preferences.getString("keyName", ""))) {
                                                                 nameBeforeList.add(name);
                                                             }
                                                         }
@@ -489,7 +498,7 @@ public class AutoWeixinService extends AccessibilityService {
      */
     private boolean sleepChangeName() {
         try {
-            long time = 1500;
+            long time = 2000;
             Thread.sleep(time);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -516,7 +525,7 @@ public class AutoWeixinService extends AccessibilityService {
                 if (abni != null) {
                     boolean flag = abni.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
                     if (flag) {
-                        if (sleepSelectAll(1000)) {
+                        if (sleepSelectAll(1500)) {
                             return false;
                         }
                     } else {
@@ -571,7 +580,7 @@ public class AutoWeixinService extends AccessibilityService {
                             performClick(info);
                             nameAfterList.add(info.getClassName().toString());
                             abni = info.getParent().getParent();
-                            if (sleepSelectAll(500)) {
+                            if (sleepSelectAll(800)) {
 
                             }
                         }

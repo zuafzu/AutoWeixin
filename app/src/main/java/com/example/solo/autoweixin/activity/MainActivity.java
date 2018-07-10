@@ -80,6 +80,18 @@ public class MainActivity extends BaseActivity {
         showAlert();
     }
 
+    public void initData() {
+        SharedPreferences preferences = getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("hasPreName", false);
+        editor.putString("preName", "");
+        editor.putInt("numType", 0);
+        editor.putInt("index", 0);
+        // editor.putString("keyName", "");
+        editor.putBoolean("isChange", false);
+        editor.apply();
+    }
+
     private void showAlert() {
         final SharedPreferences preferences = getSharedPreferences("appInfo", Context.MODE_PRIVATE);
         boolean flag = preferences.getBoolean("isFirst", true);
@@ -101,6 +113,28 @@ public class MainActivity extends BaseActivity {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     finish();
+                }
+            });
+            alertDialog = builder.create();
+            alertDialog.setCancelable(false);
+            alertDialog.show();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("提示");
+            builder.setMessage("是否继续使用上一次的配置？");
+            builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    ((Fragment1) fragment1).setOldConfig();
+                    alertDialog.dismiss();
+                }
+            });
+            builder.setNegativeButton("否", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    initData();
+                    ((Fragment1) fragment1).setOldConfig();
+                    alertDialog.dismiss();
                 }
             });
             alertDialog = builder.create();
@@ -152,6 +186,7 @@ public class MainActivity extends BaseActivity {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                // initData();
                 alertDialog.dismiss();
                 MainActivity.super.onBackPressed();
             }
@@ -165,6 +200,11 @@ public class MainActivity extends BaseActivity {
         alertDialog = builder.create();
         alertDialog.setCancelable(false);
         alertDialog.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     private void netCanProbation() {

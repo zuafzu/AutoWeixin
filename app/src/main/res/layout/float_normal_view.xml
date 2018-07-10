@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:background="#aa000000"
     android:gravity="center"
+    android:keepScreenOn="true"
     android:orientation="horizontal">
 
     <View

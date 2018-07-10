@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -36,8 +37,8 @@ import com.example.solo.autoweixin.accessibility.AutoWeixinService;
 import com.example.solo.autoweixin.activity.Main2Activity;
 import com.example.solo.autoweixin.activity.Main3Activity;
 import com.example.solo.autoweixin.activity.MainActivity;
+import com.example.solo.autoweixin.activity.WebActivity;
 import com.example.solo.autoweixin.url.Urls2;
-import com.example.solo.autoweixin.utils.StringUtils;
 import com.example.solo.autoweixin.utils.Utils;
 import com.example.solo.autoweixin.utils.VipUtils;
 import com.example.solo.autoweixin.utils.WindowManagerUtils;
@@ -78,6 +79,9 @@ public class Fragment1 extends Fragment {
     private Button textView1, textView2, textView3, textView4;
 
     private boolean isSettingAlert = false;
+
+    // 防止初始化的时候spinner改值
+    boolean isappCompatSpinnerInit = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -252,7 +256,8 @@ public class Fragment1 extends Fragment {
                             tv_btn.setText("开始");
                             isStartGroup = false;
                         } else {
-                            if (StringUtils.numType == 0 && !toggleButton1.isChecked()) {
+                            SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+                            if (preferences.getInt("numType", 0) == 0 && !toggleButton1.isChecked()) {
                                 if (toggleButton5.isChecked() || toggleButton6.isChecked()) {
                                     // tv_btn.setText("停止备注");
                                     tv_btn.setText("停止");
@@ -291,10 +296,9 @@ public class Fragment1 extends Fragment {
         iv_help.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setAction("android.intent.action.VIEW");
-                Uri content_url = Uri.parse(Urls2.urlJiaocheng);
-                intent.setData(content_url);
+                Intent intent = new Intent(getActivity(), WebActivity.class);
+                intent.putExtra("title", "使用教程");
+                intent.putExtra("url", "file:///android_asset/help.html");
                 startActivity(intent);
             }
         });
@@ -302,10 +306,15 @@ public class Fragment1 extends Fragment {
 
     // 初始化修改名字规则
     private void initChangeName(View view) {
-        StringUtils.hasPreName = false;
-        StringUtils.preName = "";
-        StringUtils.numType = 0;
-        StringUtils.index = 0;
+        final SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = preferences.edit();
+//        editor.putBoolean("hasPreName", false);
+//        editor.putString("preName", "");
+//        editor.putInt("numType", 0);
+//        editor.putInt("index", 0);
+//        editor.putString("keyName", "");
+//        editor.putBoolean("isChange", false);
+//        editor.apply();
 
         editText = view.findViewById(R.id.editText);
         editText2 = view.findViewById(R.id.editText2);
@@ -318,24 +327,30 @@ public class Fragment1 extends Fragment {
         toggleButton6 = view.findViewById(R.id.toggleButton6);
         toggleButton7 = view.findViewById(R.id.toggleButton7);
         appCompatSpinner = view.findViewById(R.id.appCompatSpinner);
-
         appCompatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 2)) {
-                    appCompatSpinner.setSelection(0, true);
+                if (isappCompatSpinnerInit) {
+                    isappCompatSpinnerInit = false;
                 } else {
-                    if (position == 0 && !toggleButton1.isChecked()) {
-                        if (textView1 != null) {
-                            textView1.setVisibility(View.GONE);
-                        }
+                    if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 2)) {
+                        appCompatSpinner.setSelection(0, true);
                     } else {
-                        if (textView1 != null) {
-                            textView1.setVisibility(View.VISIBLE);
+                        if (position == 0 && !toggleButton1.isChecked()) {
+                            if (textView1 != null) {
+                                textView1.setVisibility(View.GONE);
+                            }
+                        } else {
+                            if (textView1 != null) {
+                                textView1.setVisibility(View.VISIBLE);
+                            }
                         }
+                        // StringUtils.numType = position;
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putInt("numType", position);
+                        editor.apply();
                     }
-                    StringUtils.numType = position;
                 }
             }
 
@@ -357,11 +372,15 @@ public class Fragment1 extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
+                SharedPreferences.Editor editor = preferences.edit();
                 if (toggleButton1.isChecked()) {
-                    StringUtils.preName = s.toString();
+                    // StringUtils.preName = s.toString();
+                    editor.putString("preName", s.toString());
                 } else {
-                    StringUtils.preName = "";
+                    // StringUtils.preName = "";
+                    editor.putString("preName", "");
                 }
+                editor.apply();
             }
         });
         editText2.addTextChangedListener(new TextWatcher() {
@@ -377,15 +396,20 @@ public class Fragment1 extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
+                SharedPreferences.Editor editor = preferences.edit();
                 if (toggleButton3.isChecked()) {
                     if ("".equals(s.toString())) {
-                        StringUtils.index = 0;
+                        // StringUtils.index = 0;
+                        editor.putInt("index", 0);
                     } else {
-                        StringUtils.index = Integer.valueOf(s.toString());
+                        // StringUtils.index = Integer.valueOf(s.toString());
+                        editor.putInt("index", Integer.valueOf(s.toString()));
                     }
                 } else {
-                    StringUtils.index = 0;
+                    // StringUtils.index = 0;
+                    editor.putInt("index", 0);
                 }
+                editor.apply();
             }
         });
         editText3.addTextChangedListener(new TextWatcher() {
@@ -401,11 +425,15 @@ public class Fragment1 extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
+                SharedPreferences.Editor editor = preferences.edit();
                 if (toggleButton4.isChecked()) {
-                    StringUtils.keyName = "[," + s.toString();
+                    // StringUtils.keyName = "【," + s.toString();
+                    editor.putString("keyName", "【," + s.toString().replace("，", ","));
                 } else {
-                    StringUtils.keyName = "";
+                    // StringUtils.keyName = "";
+                    editor.putString("keyName", "");
                 }
+                editor.apply();
             }
         });
         toggleButton1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -414,7 +442,7 @@ public class Fragment1 extends Fragment {
                 if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 1)) {
                     buttonView.setChecked(false);
                 } else {
-                    if (StringUtils.numType == 0 && !isChecked) {
+                    if (preferences.getInt("numType", 0) == 0 && !isChecked) {
                         if (textView1 != null) {
                             textView1.setVisibility(View.GONE);
                         }
@@ -423,12 +451,17 @@ public class Fragment1 extends Fragment {
                             textView1.setVisibility(View.VISIBLE);
                         }
                     }
-                    StringUtils.hasPreName = isChecked;
+                    // StringUtils.hasPreName = isChecked;
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putBoolean("hasPreName", isChecked);
                     if (isChecked) {
-                        StringUtils.preName = editText.getText().toString();
+                        // StringUtils.preName = editText.getText().toString();
+                        editor.putString("preName", editText.getText().toString());
                     } else {
-                        StringUtils.preName = "";
+                        // StringUtils.preName = "";
+                        editor.putString("preName", "");
                     }
+                    editor.apply();
                 }
             }
         });
@@ -438,15 +471,20 @@ public class Fragment1 extends Fragment {
                 if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 3)) {
                     buttonView.setChecked(false);
                 } else {
+                    SharedPreferences.Editor editor = preferences.edit();
                     if (isChecked) {
                         if ("".equals(editText2.getText().toString())) {
-                            StringUtils.index = 0;
+                            // StringUtils.index = 0;
+                            editor.putInt("index", 0);
                         } else {
-                            StringUtils.index = Integer.valueOf(editText2.getText().toString());
+                            // StringUtils.index = Integer.valueOf(editText2.getText().toString());
+                            editor.putInt("index", Integer.valueOf(editText2.getText().toString()));
                         }
                     } else {
-                        StringUtils.index = 0;
+                        // StringUtils.index = 0;
+                        editor.putInt("index", 0);
                     }
+                    editor.apply();
                 }
             }
         });
@@ -456,11 +494,15 @@ public class Fragment1 extends Fragment {
                 if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 4)) {
                     buttonView.setChecked(false);
                 } else {
+                    SharedPreferences.Editor editor = preferences.edit();
                     if (isChecked) {
-                        StringUtils.keyName = "[," + editText3.getText().toString();
+                        // StringUtils.keyName = "【," + editText3.getText().toString();
+                        editor.putString("keyName", "【," + editText3.getText().toString().replace("，", ","));
                     } else {
-                        StringUtils.keyName = "";
+                        // StringUtils.keyName = "";
+                        editor.putString("keyName", "");
                     }
+                    editor.apply();
                 }
             }
         });
@@ -470,7 +512,10 @@ public class Fragment1 extends Fragment {
                 if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 5)) {
                     buttonView.setChecked(false);
                 } else {
-                    StringUtils.isChange = isChecked;
+                    // StringUtils.isChange = isChecked;
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putBoolean("isChange", isChecked);
+                    editor.apply();
                 }
             }
         });
@@ -508,13 +553,53 @@ public class Fragment1 extends Fragment {
         });
     }
 
+    // 显示上次配置的参数
+    @SuppressLint("SetTextI18n")
+    public void setOldConfig() {
+        final SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+
+        boolean hasPreName = preferences.getBoolean("hasPreName", false);// 是否有前缀名
+        String preName = preferences.getString("preName", "");// 前缀名
+        int numType = preferences.getInt("numType", 0);// 编号模式
+        int index = preferences.getInt("index", 0);// 位置
+        String keyName = preferences.getString("keyName", "");// 关键字
+        boolean isChange = preferences.getBoolean("isChange", false);// 是否替换备注名
+
+        if (appCompatSpinner != null) {
+            appCompatSpinner.setSelection(numType, true);
+        }
+        if (editText != null) {
+            editText.setText(preName);
+        }
+        if (editText2 != null) {
+            if (index != 0) {
+                editText2.setText("" + index);
+            }
+        }
+        if (editText3 != null) {
+            editText3.setText(keyName.replace("【,", ""));
+        }
+        if (toggleButton1 != null) {
+            toggleButton1.setChecked(hasPreName);
+        }
+        if (toggleButton3 != null) {
+            toggleButton3.setChecked(index != 0);
+        }
+        if (toggleButton4 != null) {
+            toggleButton4.setChecked(!keyName.equals(""));
+        }
+        if (toggleButton7 != null) {
+            toggleButton7.setChecked(isChange);
+        }
+    }
+
     // 开启悬浮窗
     @SuppressLint("InflateParams")
     private void creatFloatWindow() {
         if (windowView == null) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                 if (!Utils.commonROMPermissionCheck(context)) {
-                    if(getActivity()!=null){
+                    if (getActivity() != null) {
                         if (isSettingAlert) {
                             getActivity().finish();
                             new Handler().postDelayed(new Runnable() {
@@ -525,7 +610,7 @@ public class Fragment1 extends Fragment {
                                     intent.setClassName("com.example.solo.autoweixin", "com.example.solo.autoweixin.activity.MainActivity");
                                     context.startActivity(intent);
                                 }
-                            },500);
+                            }, 500);
                             return;
                         }
                         // 防止创建多个
@@ -587,7 +672,8 @@ public class Fragment1 extends Fragment {
                             }
                         }
                     });
-                    if (toggleButton1.isChecked() || StringUtils.numType != 0) {
+                    SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+                    if (toggleButton1.isChecked() || preferences.getInt("numType", 0) != 0) {
                         textView1.setVisibility(View.VISIBLE);
                     } else {
                         textView1.setVisibility(View.GONE);
@@ -715,7 +801,8 @@ public class Fragment1 extends Fragment {
 
     // 开始改名确认
     private boolean showStartDialog(boolean isFloatBtn) {
-        if (!StringUtils.hasPreName && StringUtils.numType == 0) {
+        SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+        if (!preferences.getBoolean("hasPreName", false) && preferences.getInt("numType", 0) == 0) {
             comeBack();
             ((MainActivity) Objects.requireNonNull(getActivity())).setPage(0);
             // 防止创建多个
@@ -811,7 +898,8 @@ public class Fragment1 extends Fragment {
 
     // 是否记忆改备注对话框
     private boolean isShowGoOnChangeNameDialog() {
-        if (lastNumType != 0 && lastNumType == StringUtils.numType && !lastName.equals("")) {
+        SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+        if (lastNumType != 0 && lastNumType == preferences.getInt("numType", 0) && !lastName.equals("")) {
             // 在界面的时候弹出
             if (isResume) {
                 // 防止创建多个

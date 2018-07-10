@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
+    android:keepScreenOn="true"
     android:orientation="vertical"
     android:paddingLeft="8dp"
     android:paddingRight="8dp">
@@ -200,7 +201,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:drawableRight="@mipmap/ic_arr"
-                        android:text="意见反馈"
+                        android:text="联系客服"
                         android:textColor="@android:color/black" />
 
                 </LinearLayout>

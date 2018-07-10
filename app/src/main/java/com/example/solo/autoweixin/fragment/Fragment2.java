@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.solo.autoweixin.R;
+import com.example.solo.autoweixin.activity.MainActivity;
 import com.example.solo.autoweixin.activity.SettingLoginActivity;
 import com.example.solo.autoweixin.base.BaseActivity;
 import com.example.solo.autoweixin.bean.BaseBean;
@@ -147,9 +148,13 @@ public class Fragment2 extends Fragment {
         ll_jiaocheng.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                Intent intent = new Intent(getActivity(), WebActivity.class);
+//                intent.putExtra("title", "使用教程");
+//                intent.putExtra("url", Urls2.urlJiaocheng);
+//                startActivity(intent);
                 Intent intent = new Intent();
                 intent.setAction("android.intent.action.VIEW");
-                Uri content_url = Uri.parse(Urls2.urlJiaocheng2);
+                Uri content_url = Uri.parse(Urls2.urlJiaocheng);
                 intent.setData(content_url);
                 startActivity(intent);
             }
@@ -254,6 +259,7 @@ public class Fragment2 extends Fragment {
                         editor.putLong("totalTime", 0);
                         editor.putLong("totalNum", 0);
                         editor.apply();
+                        ((MainActivity) getActivity()).initData();
                         if (tv_state1 != null) {
                             tv_state1.setText("未注册，请激活");
                         }

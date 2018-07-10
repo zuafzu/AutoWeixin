@@ -22,7 +22,6 @@
         android:roundIcon="@mipmap/ic_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="android.max_aspect"
             android:value="2.1" />
@@ -71,17 +70,22 @@
         <activity android:name=".activity.Main2Activity" />
         <activity android:name=".activity.Main3Activity" />
         <activity
+            android:name=".activity.SettingLoginActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan|stateHidden"
-            android:name=".activity.SettingLoginActivity" />
+            android:windowSoftInputMode="adjustPan|stateHidden" />
         <activity
+            android:name=".activity.SettingAddActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan|stateHidden"
-            android:name=".activity.SettingAddActivity" />
+            android:windowSoftInputMode="adjustPan|stateHidden" />
         <activity
+            android:name=".activity.SettingListActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan|stateHidden"
-            android:name=".activity.SettingListActivity"></activity>
+            android:windowSoftInputMode="adjustPan|stateHidden" />
+        <activity
+            android:name=".activity.WebActivity"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan|stateHidden" />
     </application>
 
 </manifest>
