@@ -380,7 +380,7 @@ public class Fragment1 extends Fragment {
                                     e.printStackTrace();
                                 }
                             } else {
-                                Toast.makeText(getActivity(), "不支持当前版本的微信，请联系管理员！", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), "不支持当前版本的微信，请联系客服qq或微信！", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Toast.makeText(getActivity(), response.getMsg(), Toast.LENGTH_SHORT).show();
