@@ -165,14 +165,16 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1px"
-                    android:background="#22222222" />
+                    android:background="#22222222"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/ll_fuzu"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="0dp"

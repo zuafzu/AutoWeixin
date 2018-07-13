@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
@@ -25,12 +26,12 @@ public class AutoWeixinService extends AccessibilityService {
     public static final String LauncherUI = "com.tencent.mm.ui.LauncherUI";
     public static final String MM = "com.tencent.mm";
 
-    public static String wx_yonghuming = "com.tencent.mm:id/cbx";//用户名id
-    public static String wx_haoyouliebiao = "com.tencent.mm:id/j8";//好友列表id
-    public static String wx_gengduo = "com.tencent.mm:id/hi";//右上角更多按钮id
-    public static String wx_xiugaibeizhu = "com.tencent.mm:id/i8";//修改备注按钮id
-    public static String wx_name1 = "com.tencent.mm:id/ap2";//用户名文本id
-    public static String wx_name2 = "com.tencent.mm:id/ap2";//用户名输入框id
+    public static String wx_yonghuming = "";//用户名id
+    public static String wx_haoyouliebiao = "";//好友列表id
+    public static String wx_gengduo = "";//右上角更多按钮id
+    public static String wx_xiugaibeizhu = "";//修改备注按钮id
+    public static String wx_name1 = "";//用户名文本id
+    public static String wx_name2 = "";//用户名输入框id
 
     public static String wx_yonghuxiangqing = "com.tencent.mm.plugin.profile.ui.ContactInfoUI";// 好友详情页面
     public static String wx_40 = "com.tencent.mm.ui.contact.SelectContactUI";// 40人界面
@@ -58,39 +59,26 @@ public class AutoWeixinService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
-        // 辅助服务被打开后 执行此方法
+        SharedPreferences preferences = Objects.requireNonNull(getSharedPreferences("appInfo", Context.MODE_PRIVATE));
         String wechatVersion = Utils.getVersion(this);
-        if ("6.6.5".equals(wechatVersion)) {
-            wx_yonghuming = "com.tencent.mm:id/cdm";
-            wx_haoyouliebiao = "com.tencent.mm:id/iq";
-            wx_gengduo = "com.tencent.mm:id/he";
-            wx_xiugaibeizhu = "com.tencent.mm:id/i3";
-            wx_name1 = "com.tencent.mm:id/ap5";
-            wx_name2 = "com.tencent.mm:id/ap4";
-        } else if ("6.6.6".equals(wechatVersion)) {
-            wx_yonghuming = "com.tencent.mm:id/cbx";
-            wx_haoyouliebiao = "com.tencent.mm:id/j8";
-            wx_gengduo = "com.tencent.mm:id/hi";
-            wx_xiugaibeizhu = "com.tencent.mm:id/i8";
-            wx_name1 = "com.tencent.mm:id/ap2";
-            wx_name2 = "com.tencent.mm:id/ap2";
-        } else if ("6.6.7".equals(wechatVersion)) {
-            wx_yonghuming = "com.tencent.mm:id/y3";
-            wx_haoyouliebiao = "com.tencent.mm:id/jq";
-            wx_gengduo = "com.tencent.mm:id/hh";
-            wx_xiugaibeizhu = "com.tencent.mm:id/ge";
-            wx_name1 = "com.tencent.mm:id/arc";
-            wx_name2 = "com.tencent.mm:id/arc";
-        } else if ("6.7.0".equals(wechatVersion)) {
-            wx_yonghuming = "com.tencent.mm:id/y4";
-            wx_haoyouliebiao = "com.tencent.mm:id/jr";
-            wx_gengduo = "com.tencent.mm:id/hi";
-            wx_xiugaibeizhu = "com.tencent.mm:id/gf";
-            wx_name1 = "com.tencent.mm:id/arj";
-            wx_name2 = "com.tencent.mm:id/arj";
+        if ("".equals(preferences.getString("version_id", ""))) {
+            Toast.makeText(AutoWeixinService.this, "请完全退出并重新启动改名宝，点击应用内开启辅助服务！", Toast.LENGTH_LONG).show();
+        } else {
+            if (wechatVersion.equals(preferences.getString("version_id", ""))) {
+                if ("".equals(wx_yonghuming)) {
+                    wx_yonghuming = preferences.getString("wx_yonghuming", "");
+                    wx_haoyouliebiao = preferences.getString("wx_haoyouliebiao", "");
+                    wx_gengduo = preferences.getString("wx_gengduo", "");
+                    wx_xiugaibeizhu = preferences.getString("wx_xiugaibeizhu", "");
+                    wx_name1 = preferences.getString("wx_name1", "");
+                    wx_name2 = preferences.getString("wx_name2", "");
+                }
+            } else {
+                Toast.makeText(AutoWeixinService.this, "微信版本发生变化，请完全退出并重新启动改名宝，点击应用内开启辅助服务！", Toast.LENGTH_LONG).show();
+            }
         }
+        // 辅助服务被打开后 执行此方法
         autoWeixinService = this;
-        // 初始化
         myName = "";
         isStarFriend = false;
         isAfterStarFriendName = false;
@@ -181,6 +169,7 @@ public class AutoWeixinService extends AccessibilityService {
             if (accessibilityNodeInfo == null) {
                 return true;
             }
+            Log.e("cyf", "11111111111111    " + wx_haoyouliebiao);
             List<AccessibilityNodeInfo> nodeInfoList = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_haoyouliebiao);
             if (!nodeInfoList.isEmpty()) {
                 if (nameBeforeList.size() == 0) {

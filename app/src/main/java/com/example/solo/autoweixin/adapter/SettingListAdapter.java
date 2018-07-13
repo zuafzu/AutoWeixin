@@ -1,5 +1,6 @@
 package com.example.solo.autoweixin.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
@@ -14,6 +15,8 @@ import android.widget.Toast;
 import com.example.solo.autoweixin.R;
 import com.example.solo.autoweixin.bean.CodeBean;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,6 +45,7 @@ public class SettingListAdapter extends BaseAdapter {
         return i;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -82,6 +86,11 @@ public class SettingListAdapter extends BaseAdapter {
             holder.textView4.setTextColor(ContextCompat.getColor(context, R.color.colorAccent));
         } else {
             holder.textView4.setText("已激活");
+            if (codeBeanList.get(position).getActivatedDate() != null) {
+                Date date = new Date(codeBeanList.get(position).getActivatedDate());
+                DateFormat dateFormat = DateFormat.getDateInstance();
+                holder.textView4.setText("已激活 （" + dateFormat.format(date) + "）");
+            }
             holder.textView4.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_light));
         }
         holder.btn_copy.setOnClickListener(new View.OnClickListener() {

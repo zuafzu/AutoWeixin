@@ -312,9 +312,7 @@ public class Fragment2 extends Fragment {
                             SharedPreferences.Editor editor = preferences.edit();
                             editor.putString("mKey", codeBean.getmKey());
                             editor.putInt("vipType", codeBean.getVipType());
-                            if (codeBean.getActivatedDate() != null) {
-                                editor.putLong("activatedDate", codeBean.getActivatedDate());
-                            }
+                            editor.putLong("activatedDate", codeBean.getActivatedDate());
                             editor.putLong("endDate", codeBean.getEndDate());
                             editor.putLong("totalTime", codeBean.getTotalTime());
                             long a = preferences.getLong("totalNum", 0);

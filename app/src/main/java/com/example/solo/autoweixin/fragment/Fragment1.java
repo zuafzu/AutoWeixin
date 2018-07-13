@@ -38,15 +38,28 @@ import com.example.solo.autoweixin.activity.Main2Activity;
 import com.example.solo.autoweixin.activity.Main3Activity;
 import com.example.solo.autoweixin.activity.MainActivity;
 import com.example.solo.autoweixin.activity.WebActivity;
+import com.example.solo.autoweixin.base.BaseActivity;
+import com.example.solo.autoweixin.bean.BaseBean;
+import com.example.solo.autoweixin.bean.WeixinBean;
+import com.example.solo.autoweixin.url.Urls;
 import com.example.solo.autoweixin.url.Urls2;
 import com.example.solo.autoweixin.utils.Utils;
 import com.example.solo.autoweixin.utils.VipUtils;
 import com.example.solo.autoweixin.utils.WindowManagerUtils;
 import com.example.solo.autoweixin.view.SlideShowView;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.Callback;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -280,14 +293,15 @@ public class Fragment1 extends Fragment {
                         }
                     }
                 } else {
-                    try {
-                        //打开系统设置中辅助功能
-                        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                        startActivity(intent);
-                    } catch (Exception e) {
-                        Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
+                    netGetWeixin();
+//                    try {
+//                        //打开系统设置中辅助功能
+//                        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+//                        startActivity(intent);
+//                    } catch (Exception e) {
+//                        Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                        e.printStackTrace();
+//                    }
                 }
             }
 
@@ -302,6 +316,83 @@ public class Fragment1 extends Fragment {
                 startActivity(intent);
             }
         });
+    }
+
+    private void netGetWeixin() {
+        OkHttpUtils.post()
+                .url(Urls.getWeixin)
+                .build()
+                .execute(new Callback<BaseBean>() {
+
+                    @Override
+                    public void onBefore(Request request, int id) {
+                        super.onBefore(request, id);
+                        ((BaseActivity) Objects.requireNonNull(getActivity())).showProgressDialog();
+                    }
+
+                    @Override
+                    public BaseBean parseNetworkResponse(Response response, int id) throws Exception {
+                        String string = response.body().string();
+                        return new Gson().fromJson(string, BaseBean.class);
+                    }
+
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Toast.makeText(getActivity(), "获取微信信息，无法使用，请稍后重试！", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onResponse(BaseBean response, int id) {
+                        if ("0".equals(response.getCode())) {
+                            // 给微信按钮赋值id
+                            String wechatVersion = Utils.getVersion(Objects.requireNonNull(getActivity()));
+                            ArrayList<WeixinBean> list = new Gson().fromJson(response.getData().toString().replaceAll("com.tencent.mm:id/", ""), new TypeToken<ArrayList<WeixinBean>>() {
+                            }.getType());
+                            boolean flag = false;
+                            for (int i = 0; i < list.size(); i++) {
+                                if (wechatVersion.equals(list.get(i).getVersion_id())) {
+                                    flag = true;
+                                    SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("appInfo", Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = preferences.edit();
+                                    editor.putString("version_id", list.get(i).getVersion_id());
+                                    editor.putString("wx_yonghuming", "com.tencent.mm:id/" + list.get(i).getWx_yonghuming());
+                                    editor.putString("wx_haoyouliebiao", "com.tencent.mm:id/" + list.get(i).getWx_haoyouliebiao());
+                                    editor.putString("wx_gengduo", "com.tencent.mm:id/" + list.get(i).getWx_gengduo());
+                                    editor.putString("wx_xiugaibeizhu", "com.tencent.mm:id/" + list.get(i).getWx_xiugaibeizhu());
+                                    editor.putString("wx_name1", "com.tencent.mm:id/" + list.get(i).getWx_name1());
+                                    editor.putString("wx_name2", "com.tencent.mm:id/" + list.get(i).getWx_name2());
+                                    editor.apply();
+                                    AutoWeixinService.wx_yonghuming = "com.tencent.mm:id/" + list.get(i).getWx_yonghuming();
+                                    AutoWeixinService.wx_haoyouliebiao = "com.tencent.mm:id/" + list.get(i).getWx_haoyouliebiao();
+                                    AutoWeixinService.wx_gengduo = "com.tencent.mm:id/" + list.get(i).getWx_gengduo();
+                                    AutoWeixinService.wx_xiugaibeizhu = "com.tencent.mm:id/" + list.get(i).getWx_xiugaibeizhu();
+                                    AutoWeixinService.wx_name1 = "com.tencent.mm:id/" + list.get(i).getWx_name1();
+                                    AutoWeixinService.wx_name2 = "com.tencent.mm:id/" + list.get(i).getWx_name2();
+                                }
+                            }
+                            if (flag) {
+                                // 打开系统设置中辅助功能
+                                try {
+                                    Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    // Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                Toast.makeText(getActivity(), "不支持当前版本的微信，请联系管理员！", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(getActivity(), response.getMsg(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onAfter(int id) {
+                        super.onAfter(id);
+                        ((BaseActivity) Objects.requireNonNull(getActivity())).dissmissProgressDialog();
+                    }
+                });
     }
 
     // 初始化修改名字规则

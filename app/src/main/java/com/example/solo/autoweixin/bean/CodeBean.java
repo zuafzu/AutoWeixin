@@ -61,7 +61,7 @@ public class CodeBean {
     }
 
     public void setActivatedDate(Long activatedDate) {
-        activatedDate = activatedDate;
+        this.activatedDate = activatedDate;
     }
 
     public Long getEndDate() {
