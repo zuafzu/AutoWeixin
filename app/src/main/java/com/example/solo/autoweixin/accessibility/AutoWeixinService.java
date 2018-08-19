@@ -181,12 +181,12 @@ public class AutoWeixinService extends AccessibilityService {
                         AccessibilityNodeInfo abi = nodeInfoList.get(0);
                         for (int i = 0; i < abi.getChildCount(); i++) {
                             if (abi.getChild(i) != null) {
-                                // 判断是不是星标朋友
+                                // 判断是不是星标朋友或者我的企业
                                 if (abi.getChild(i).getChildCount() == 2) {
                                     AccessibilityNodeInfo ani = abi.getChild(i).getChild(0);
                                     if (ani != null && ani.getText() != null && ani.getText() != null) {
                                         String name = ani.getText().toString();
-                                        if (name.equals("星标朋友")) {
+                                        if (name.equals("星标朋友") || name.equals("我的企业")) {
                                             isStarFriend = true;
                                         } else {
                                             isStarFriend = false;
@@ -254,7 +254,9 @@ public class AutoWeixinService extends AccessibilityService {
                         // 好友列表没有
                         if (!hasSame) {
                             // 判断会员次数是否还有
-                            long a = preferences.getLong("totalNum", 0);
+                            // 新版本取消次数限制
+                            long a = 9L;
+                            // long a = preferences.getLong("totalNum", 0);
                             if (a <= 0) {
                                 errString = "会员次数已经全部用光，";
                                 return false;
