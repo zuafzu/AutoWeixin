@@ -232,9 +232,9 @@ public class Fragment2 extends Fragment {
                         Date d1 = new Date(preferences.getLong("endDate", 0));
                         String date = format.format(d1);
                         String num = "" + preferences.getLong("totalNum", 0);
-                        if (preferences.getLong("totalNum", 0) > 8999999) {
+//                        if (preferences.getLong("totalNum", 0) > 8999999) {
                             num = "无限";
-                        }
+//                        }
                         tv_state2.setText("会员类型：" + type + "\n到期日期：" + date + "\n剩余改名次数：" + num);
                     }
                 }
