@@ -163,14 +163,19 @@ public class Fragment2 extends Fragment {
         ll_fuzu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    //打开系统设置中辅助功能
-                    Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                    startActivity(intent);
-                } catch (Exception e) {
-                    Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
+                if (Fragment1.fragment1 != null) {
+                    Fragment1.fragment1.netGetWeixin();
+                }else{
+                    Toast.makeText(getActivity(), "无法打开辅助功能", Toast.LENGTH_SHORT).show();
                 }
+//                try {
+//                    //打开系统设置中辅助功能
+//                    Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+//                    startActivity(intent);
+//                } catch (Exception e) {
+//                    Toast.makeText(getActivity(), "错误异常 ： " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                    e.printStackTrace();
+//                }
             }
         });
         ll_version = view.findViewById(R.id.ll_version);
@@ -233,7 +238,7 @@ public class Fragment2 extends Fragment {
                         String date = format.format(d1);
                         String num = "" + preferences.getLong("totalNum", 0);
 //                        if (preferences.getLong("totalNum", 0) > 8999999) {
-                            num = "无限";
+                        num = "无限";
 //                        }
                         tv_state2.setText("会员类型：" + type + "\n到期日期：" + date + "\n剩余改名次数：" + num);
                     }

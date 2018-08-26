@@ -111,6 +111,7 @@ public class Fragment1 extends Fragment {
         super.onStart();
         context = Objects.requireNonNull(getActivity()).getApplicationContext();
         isResume = true;
+        tv_btn.setText("开启辅助服务");
         if (accessibilityManager.isEnabled()) {
             initCreatFloatWindow();
         } else {
@@ -318,7 +319,7 @@ public class Fragment1 extends Fragment {
         });
     }
 
-    private void netGetWeixin() {
+    public void netGetWeixin() {
         OkHttpUtils.post()
                 .url(Urls.getWeixin)
                 .build()
