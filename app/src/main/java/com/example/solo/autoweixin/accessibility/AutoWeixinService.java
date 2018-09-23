@@ -27,6 +27,7 @@ public class AutoWeixinService extends AccessibilityService {
     public static final String MM = "com.tencent.mm";
 
     public static String wx_yonghuming = "";//用户名id
+    public static String wx_biaoqian = "";//用户标签
     public static String wx_haoyouliebiao = "";//好友列表id
     public static String wx_gengduo = "";//右上角更多按钮id
     public static String wx_xiugaibeizhu = "";//修改备注按钮id
@@ -48,7 +49,8 @@ public class AutoWeixinService extends AccessibilityService {
     private String afterStarFriendNameKey = "";// 星标朋友下面的第一个字母
     private List<String> nameBeforeList = new ArrayList<>();//修改前的当前用户名列表
     private String changeName;// 修改者的用户名
-    private List<String> nameAfterList = new ArrayList<>();//修改后的总用户名列表(选择联系人和修改备注共用)
+    private List<String> nameAfterList = new ArrayList<>();// 修改后的总用户名列表(选择联系人和修改备注共用)
+    private List<String> userTagNameList = new ArrayList<>();// 包含标签的用户名
     private int index = 0;// 当前修改位置(选择联系人和修改备注共用)
     private ChangNameTask changNameTask;
 
@@ -67,6 +69,7 @@ public class AutoWeixinService extends AccessibilityService {
             if (wechatVersion.equals(preferences.getString("version_id", ""))) {
                 if ("".equals(wx_yonghuming)) {
                     wx_yonghuming = preferences.getString("wx_yonghuming", "");
+                    wx_biaoqian = preferences.getString("wx_biaoqian", "");
                     wx_haoyouliebiao = preferences.getString("wx_haoyouliebiao", "");
                     wx_gengduo = preferences.getString("wx_gengduo", "");
                     wx_xiugaibeizhu = preferences.getString("wx_xiugaibeizhu", "");
@@ -84,6 +87,7 @@ public class AutoWeixinService extends AccessibilityService {
         isAfterStarFriendName = false;
         afterStarFriendNameKey = "";
         nameAfterList.clear();
+        userTagNameList.clear();
         nameBeforeList.clear();
         changeName = "";
         index = 0;
@@ -110,6 +114,7 @@ public class AutoWeixinService extends AccessibilityService {
                         isAfterStarFriendName = false;
                         afterStarFriendNameKey = "";
                         nameAfterList.clear();
+                        userTagNameList.clear();
                         if (Fragment1.fragment1 != null) {
                             for (int i = 0; i < Fragment1.lastNumTotal; i++) {
                                 nameAfterList.add(" ");
@@ -267,6 +272,34 @@ public class AutoWeixinService extends AccessibilityService {
                             if (sleepChangeName()) {
                                 return true;
                             }
+                            // 判断是否有标签，标签是否需要跳过
+                            accessibilityNodeInfo = getRootInActiveWindow();
+                            String wechatVersion = Utils.getVersion(getApplication());
+                            String userTag = preferences.getString("userTag", "");// 用户标签
+                            // 判断微信版本名称大于等于6.7.2，并且标签不是空，并且该用户有标签
+                            if (Integer.valueOf(wechatVersion.replace(".", "").substring(0, 3)) >= 672 &&
+                                    !userTag.equals("") &&
+                                    accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_biaoqian).size() > 0) {
+                                String[] userTags = userTag.split(",");
+                                for (String userTag1 : userTags) {
+                                    String mUserTagName = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_biaoqian).get(0).getText().toString();
+                                    if (mUserTagName.equals(userTag1)) {
+                                        // 包含该标签，跳过
+                                        index++;
+                                        userTagNameList.add(changeName);
+                                        if (currentWindowActivity.equals(wx_yonghuxiangqing)) {
+                                            PerformClickUtils.performBack(AutoWeixinService.this);
+                                        } else {
+                                            errString = "修改备注过程中出现异常，";
+                                            return false;
+                                        }
+                                        if (sleepChangeName()) {
+                                            return true;
+                                        }
+                                        return true;
+                                    }
+                                }
+                            }
                             PerformClickUtils.findViewIdAndClick(AutoWeixinService.this, wx_gengduo);
                             PerformClickUtils.findTextAndClick(AutoWeixinService.this, "更多");
                             if (sleepChangeName()) {
@@ -399,6 +432,7 @@ public class AutoWeixinService extends AccessibilityService {
                             }
                         }
                     }
+
                     boolean isNext = true;
                     for (int i = 0; i < nameBeforeList.size(); i++) {
                         boolean hasSame = false;
@@ -406,6 +440,14 @@ public class AutoWeixinService extends AccessibilityService {
                             if (nameBeforeList.get(i).equals(nameAfterList.get(j))) {
                                 hasSame = true;
                                 break;
+                            }
+                        }
+                        if (!hasSame) {
+                            for (int k = 0; k < userTagNameList.size(); k++) {
+                                if (nameBeforeList.get(i).equals(userTagNameList.get(k))) {
+                                    hasSame = true;
+                                    break;
+                                }
                             }
                         }
                         if (!hasSame) {
@@ -417,6 +459,7 @@ public class AutoWeixinService extends AccessibilityService {
                     if (isNext) {
                         nodeInfoList = accessibilityNodeInfo.findAccessibilityNodeInfosByViewId(wx_haoyouliebiao);
                         if (!nodeInfoList.isEmpty()) {
+                            nameBeforeList.clear();
                             return nodeInfoList.get(0).performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
                         }
                     }

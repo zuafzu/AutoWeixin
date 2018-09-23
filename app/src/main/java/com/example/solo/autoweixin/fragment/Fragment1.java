@@ -19,6 +19,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +67,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class Fragment1 extends Fragment {
 
+    @SuppressLint("StaticFieldLeak")
     public static Fragment1 fragment1;
     public static String lastName = "";//上次修改的最后一个人名称
     public static int lastNumType = 0;//上次修改编号模式
@@ -79,8 +81,8 @@ public class Fragment1 extends Fragment {
     private SlideShowView slideShowView;
     private TextView tv_btn;
     private AppCompatSpinner appCompatSpinner;
-    private EditText editText, editText2, editText3;
-    private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6, toggleButton7;
+    private EditText editText, editText2, editText3, editText4;
+    private ToggleButton toggleButton1, toggleButton2, toggleButton3, toggleButton4, toggleButton5, toggleButton6, toggleButton7, toggleButton8;
 
     private boolean isResume = false;
     private boolean isShowWindowPermission = true;
@@ -210,6 +212,12 @@ public class Fragment1 extends Fragment {
     }
 
     private void initView(View view) {
+        String wechatVersion = Utils.getVersion(Objects.requireNonNull(getActivity()));
+        if (Integer.valueOf(wechatVersion.replace(".", "").substring(0, 3)) >= 672) {
+            view.findViewById(R.id.ll_tag).setVisibility(View.VISIBLE);
+        } else {
+            view.findViewById(R.id.ll_tag).setVisibility(View.GONE);
+        }
         lastName = "";
         lastNumType = 0;
         lastNumTotal = 0;
@@ -334,6 +342,7 @@ public class Fragment1 extends Fragment {
                     @Override
                     public BaseBean parseNetworkResponse(Response response, int id) throws Exception {
                         String string = response.body().string();
+                        Log.e("cyf", "string : " + string);
                         return new Gson().fromJson(string, BaseBean.class);
                     }
 
@@ -357,6 +366,7 @@ public class Fragment1 extends Fragment {
                                     SharedPreferences.Editor editor = preferences.edit();
                                     editor.putString("version_id", list.get(i).getVersion_id());
                                     editor.putString("wx_yonghuming", "com.tencent.mm:id/" + list.get(i).getWx_yonghuming());
+                                    editor.putString("wx_biaoqian", "com.tencent.mm:id/" + list.get(i).getWx_biaoqian());
                                     editor.putString("wx_haoyouliebiao", "com.tencent.mm:id/" + list.get(i).getWx_haoyouliebiao());
                                     editor.putString("wx_gengduo", "com.tencent.mm:id/" + list.get(i).getWx_gengduo());
                                     editor.putString("wx_xiugaibeizhu", "com.tencent.mm:id/" + list.get(i).getWx_xiugaibeizhu());
@@ -364,6 +374,7 @@ public class Fragment1 extends Fragment {
                                     editor.putString("wx_name2", "com.tencent.mm:id/" + list.get(i).getWx_name2());
                                     editor.apply();
                                     AutoWeixinService.wx_yonghuming = "com.tencent.mm:id/" + list.get(i).getWx_yonghuming();
+                                    AutoWeixinService.wx_biaoqian = "com.tencent.mm:id/" + list.get(i).getWx_biaoqian();
                                     AutoWeixinService.wx_haoyouliebiao = "com.tencent.mm:id/" + list.get(i).getWx_haoyouliebiao();
                                     AutoWeixinService.wx_gengduo = "com.tencent.mm:id/" + list.get(i).getWx_gengduo();
                                     AutoWeixinService.wx_xiugaibeizhu = "com.tencent.mm:id/" + list.get(i).getWx_xiugaibeizhu();
@@ -411,6 +422,7 @@ public class Fragment1 extends Fragment {
         editText = view.findViewById(R.id.editText);
         editText2 = view.findViewById(R.id.editText2);
         editText3 = view.findViewById(R.id.editText3);
+        editText4 = view.findViewById(R.id.editText4);
         toggleButton1 = view.findViewById(R.id.toggleButton1);
         toggleButton2 = view.findViewById(R.id.toggleButton2);
         toggleButton3 = view.findViewById(R.id.toggleButton3);
@@ -418,6 +430,7 @@ public class Fragment1 extends Fragment {
         toggleButton5 = view.findViewById(R.id.toggleButton5);
         toggleButton6 = view.findViewById(R.id.toggleButton6);
         toggleButton7 = view.findViewById(R.id.toggleButton7);
+        toggleButton8 = view.findViewById(R.id.toggleButton8);
         appCompatSpinner = view.findViewById(R.id.appCompatSpinner);
         appCompatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -519,11 +532,33 @@ public class Fragment1 extends Fragment {
             public void afterTextChanged(Editable s) {
                 SharedPreferences.Editor editor = preferences.edit();
                 if (toggleButton4.isChecked()) {
-                    // StringUtils.keyName = "【," + s.toString();
                     editor.putString("keyName", "【," + s.toString().replace("，", ","));
                 } else {
-                    // StringUtils.keyName = "";
                     editor.putString("keyName", "");
+                }
+                editor.apply();
+            }
+        });
+        editText4.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                SharedPreferences.Editor editor = preferences.edit();
+                if (toggleButton8.isChecked()) {
+                    // StringUtils.keyName = "【," + s.toString();
+                    editor.putString("userTag", s.toString().replace("，", ","));
+                } else {
+                    // StringUtils.keyName = "";
+                    editor.putString("userTag", "");
                 }
                 editor.apply();
             }
@@ -598,6 +633,23 @@ public class Fragment1 extends Fragment {
                 }
             }
         });
+        toggleButton8.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (!VipUtils.canVip(Objects.requireNonNull(getActivity()), 4)) {
+                    buttonView.setChecked(false);
+                } else {
+                    SharedPreferences.Editor editor = preferences.edit();
+                    if (isChecked) {
+                        editor.putString("userTag", editText4.getText().toString().replace("，", ","));
+                    } else {
+                        // StringUtils.keyName = "";
+                        editor.putString("userTag", "");
+                    }
+                    editor.apply();
+                }
+            }
+        });
         toggleButton7.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -655,6 +707,7 @@ public class Fragment1 extends Fragment {
         int numType = preferences.getInt("numType", 0);// 编号模式
         int index = preferences.getInt("index", 0);// 位置
         String keyName = preferences.getString("keyName", "");// 关键字
+        String userTag = preferences.getString("userTag", "");// 用户标签
         boolean isChange = preferences.getBoolean("isChange", false);// 是否替换备注名
 
         if (appCompatSpinner != null) {
@@ -671,6 +724,9 @@ public class Fragment1 extends Fragment {
         if (editText3 != null) {
             editText3.setText(keyName.replace("【,", ""));
         }
+        if (editText4 != null) {
+            editText4.setText(userTag);
+        }
         if (toggleButton1 != null) {
             toggleButton1.setChecked(hasPreName);
         }
@@ -679,6 +735,9 @@ public class Fragment1 extends Fragment {
         }
         if (toggleButton4 != null) {
             toggleButton4.setChecked(!keyName.equals(""));
+        }
+        if (toggleButton8 != null) {
+            toggleButton8.setChecked(!userTag.equals(""));
         }
         if (toggleButton7 != null) {
             toggleButton7.setChecked(isChange);

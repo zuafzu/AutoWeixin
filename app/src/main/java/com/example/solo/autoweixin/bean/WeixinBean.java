@@ -4,6 +4,7 @@ public class WeixinBean {
 
     private String version_id;
     private String wx_yonghuming;
+    private String wx_biaoqian;
     private String wx_haoyouliebiao;
     private String wx_gengduo;
     private String wx_xiugaibeizhu;
@@ -70,11 +71,20 @@ public class WeixinBean {
         this.wx_name2 = wx_name2;
     }
 
+    public String getWx_biaoqian() {
+        return wx_biaoqian;
+    }
+
+    public void setWx_biaoqian(String wx_biaoqian) {
+        this.wx_biaoqian = wx_biaoqian;
+    }
+
     @Override
     public String toString() {
         return "WeixinBean{" +
                 "version_id='" + version_id + '\'' +
                 ", wx_yonghuming='" + wx_yonghuming + '\'' +
+                ", wx_biaoqian='" + wx_biaoqian + '\'' +
                 ", wx_haoyouliebiao='" + wx_haoyouliebiao + '\'' +
                 ", wx_gengduo='" + wx_gengduo + '\'' +
                 ", wx_xiugaibeizhu='" + wx_xiugaibeizhu + '\'' +
